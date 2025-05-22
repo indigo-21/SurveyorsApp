@@ -1,29 +1,41 @@
 {
   "expo": {
-    "name": "SurveyorsApp",
-    "slug": "SurveyorsApp",
+    "name": "Surveyors App",
+    "slug": "Surveyors App",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/agility_logo_login.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/images/agility_logo_login.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#fff"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/agility_logo_login.png",
+        "backgroundColor": "#fff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.SurveyorsApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Agility Eco to access your camera",
+          "microphonePermission": "Allow Agility Eco to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      "expo-sqlite"
+    ]
   }
 }
