@@ -1,10 +1,10 @@
 import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import CustomButton from "../components/CustomButton";
-import Colors from "../constants/Colors";
+import CustomButton from "../../components/CustomButton";
+import Colors from "../../constants/Colors";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import LoadingOverlay from "../components/LoadingOverlay";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 function QRCodeScreen() {
     const navigation = useNavigation();
@@ -33,12 +33,12 @@ function QRCodeScreen() {
 
     return (
         <ImageBackground
-            source={require("../assets/images/background2.jpg")}
+            source={require("../../assets/images/background2.jpg")}
             style={{ flex: 1 }}
         >
             <View style={styles.container}>
                 <Image
-                    source={require("../assets/images/agility_logo_login.png")}
+                    source={require("../../assets/images/agility_logo_login.png")}
                     style={styles.image}
                 />
 

@@ -3,23 +3,24 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
-import { AuthContext } from "../store/auth-context";
-import { DataContext } from "../store/data-context";
-import { logout } from "../util/auth";
-import ConfigrationGrid from "../components/ConfigurationGrid";
-import Colors from "../constants/Colors";
-import BoxGrid from "../components/BoxGrid";
-import ScreenWrapper from "../components/ScreenWrapper";
-import ScreenTitle from "../components/ScreenTitle";
-import IconButton from "../components/IconButton";
-import LoadingOverlay from "../components/LoadingOverlay";
+import { AuthContext } from "../../store/auth-context";
+import { DataContext } from "../../store/data-context";
+import { logout } from "../../util/auth";
+import ConfigrationGrid from "../../components/ConfigurationGrid";
+import Colors from "../../constants/Colors";
+import BoxGrid from "../../components/BoxGrid";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import ScreenTitle from "../../components/ScreenTitle";
+import IconButton from "../../components/IconButton";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { dropAllTables, fetchDataFromDB, initializeDB } from "../util/database";
-import { getSurveyQuestionSets } from "../util/db/surveyQuestionSets";
+import { dropAllTables, fetchDataFromDB, initializeDB } from "../../util/database";
+import { getSurveyQuestionSets } from "../../util/db/surveyQuestionSets";
 import {
     getPropertyInspectorJobs,
     getPropertyInspectorUnbookedJobs,
-} from "../util/db/jobs";
+} from "../../util/db/jobs";
+import { setSyncReady } from "./services/SyncStatusService";
 
 function DashboardScreen() {
     const [isFetching, setIsFetching] = useState(false);
@@ -45,8 +46,8 @@ function DashboardScreen() {
             Alert.alert(
                 "Logout Failed",
                 error.response?.data.message ||
-                    error.message ||
-                    "There's an issue logging out your account, please try again later.",
+                error.message ||
+                "There's an issue logging out your account, please try again later.",
             );
             setIsLoggingOut(false);
         }
@@ -81,14 +82,12 @@ function DashboardScreen() {
     };
 
     const fetchAllData = async () => {
-        const getPiJobsQuery = getPropertyInspectorJobs("jobs");
-        const getSurveyQuestionSetsQuery = getSurveyQuestionSets(
-            "survey_question_sets",
-        );
-        const getPIUnbookedJobsQuery = getPropertyInspectorUnbookedJobs("jobs");
+        const getPiJobsQuery = getPropertyInspectorJobs();
+        const getSurveyQuestionSetsQuery = getSurveyQuestionSets();
+        const getPIUnbookedJobsQuery = getPropertyInspectorUnbookedJobs();
 
         Promise.all([
-            fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 2]),
+            fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 1, 2]),
             fetchDataFromDB(getSurveyQuestionSetsQuery),
             fetchDataFromDB(getPIUnbookedJobsQuery, [propertyInspectorID, 25]),
         ])
@@ -100,9 +99,11 @@ function DashboardScreen() {
                 Alert.alert(
                     "Fetching Failed",
                     error.response?.data.message ||
-                        error.message ||
-                        "Please try again later.",
+                    error.message ||
+                    "Please try again later.",
                 );
+            }).finally(() => {
+                setSyncReady(true);
             });
     };
 
@@ -267,7 +268,7 @@ function DashboardScreen() {
             <ScreenTitle title="Bookings" size={16} />
             <View style={styles.row}>
                 <BoxGrid
-                    image={require("../assets/images/house_icon.png")}
+                    image={require("../../assets/images/house_icon.png")}
                     onPress={currentVisitNavigateHandler}
                 >
                     <Text style={styles.textCount}>
@@ -276,7 +277,7 @@ function DashboardScreen() {
                     <Text style={styles.textBottomCenter}>Current Visits</Text>
                 </BoxGrid>
                 <BoxGrid
-                    image={require("../assets/images/question.png")}
+                    image={require("../../assets/images/question.png")}
                     onPress={questionSetsNavigateHandler}
                 >
                     <Text style={styles.textCount}>
@@ -285,7 +286,7 @@ function DashboardScreen() {
                     <Text style={styles.textBottomCenter}>Question Sets</Text>
                 </BoxGrid>
                 <BoxGrid
-                    image={require("../assets/images/complete.png")}
+                    image={require("../../assets/images/complete.png")}
                     onPress={completedVisitNavigateHandler}
                 >
                     <Text style={styles.textCount}>
@@ -296,7 +297,7 @@ function DashboardScreen() {
                     </Text>
                 </BoxGrid>
                 <BoxGrid
-                    image={require("../assets/images/book.png")}
+                    image={require("../../assets/images/book.png")}
                     onPress={bookJobNavigateHandler}
                 >
                     <Text style={styles.textCount}>

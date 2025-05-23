@@ -29,3 +29,10 @@ export const getPIBookings = () => {
             WHERE j.property_inspector_id = ?
 			AND j.job_status_id = 25`;
 }
+
+export const bookPIJob = () => {
+    return `INSERT INTO
+            bookings ( job_number, booking_outcome, user_id, property_inspector_id, booking_date, booking_notes, created_at, updated_at )
+            VALUES
+            ( ?, ?, ?, ?, ?, ?, ?, ? )`
+}

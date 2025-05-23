@@ -2,13 +2,13 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 
-import ScreenWrapper from "../components/ScreenWrapper";
-import ScreenTitle from "../components/ScreenTitle";
-import Colors from "../constants/Colors";
-import JobDetailsBox from "../components/JobDetailsBox";
-import { getJobDetails } from "../util/db/jobs";
-import { fetchDataFromDB } from "../util/database";
-import { getJobMeasures } from "../util/db/jobMeasures";
+import ScreenTitle from "../../components/ScreenTitle";
+import Colors from "../../constants/Colors";
+import JobDetailsBox from "../../components/JobDetailsBox";
+import { getJobDetails } from "../../util/db/jobs";
+import { fetchDataFromDB } from "../../util/database";
+import { getJobMeasures } from "../../util/db/jobMeasures";
+import ScreenWrapper from "../../components/ScreenWrapper";
 
 function JobDetailsScreen() {
     const [jobData, setJobData] = useState(

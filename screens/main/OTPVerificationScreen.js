@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { AuthContext } from "../store/auth-context";
-import { logout, sendSMS, verifyOTP } from "../util/auth";
+import { AuthContext } from "../../store/auth-context";
+import { logout, sendSMS, verifyOTP } from "../../util/auth";
 import {
     Alert,
     Image,
@@ -15,9 +15,9 @@ import {
     TextInput,
     View,
 } from "react-native";
-import LoadingOverlay from "../components/LoadingOverlay";
-import CustomButton from "../components/CustomButton";
-import Colors from "../constants/Colors";
+import LoadingOverlay from "../../components/LoadingOverlay";
+import CustomButton from "../../components/CustomButton";
+import Colors from "../../constants/Colors";
 
 function OTPVerificationScreen() {
     const navigation = useNavigation();
@@ -156,7 +156,7 @@ function OTPVerificationScreen() {
         <>
             <StatusBar barStyle="dark-content" />
             <ImageBackground
-                source={require("../assets/images/background2.jpg")}
+                source={require("../../assets/images/background2.jpg")}
                 style={{ flex: 1 }}
             >
                 <KeyboardAvoidingView
@@ -167,7 +167,7 @@ function OTPVerificationScreen() {
                         keyboardShouldPersistTaps="handled">
                         <View style={styles.container}>
                             <Image
-                                source={require("../assets/images/agility_logo_login.png")}
+                                source={require("../../assets/images/agility_logo_login.png")}
                                 style={styles.image}
                             />
 

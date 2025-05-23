@@ -1,15 +1,18 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { format } from 'date-fns';
 
-import ScreenWrapper from "../components/ScreenWrapper";
-import JobList from "../components/JobList";
-import Colors from "../constants/Colors";
-import CustomModal from "../components/CustomModal";
-import ScreenTitle from "../components/ScreenTitle";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import JobList from "../../components/JobList";
+import Colors from "../../constants/Colors";
+import CustomModal from "../../components/CustomModal";
+import ScreenTitle from "../../components/ScreenTitle";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { fetchDataFromDB } from "../util/database";
-import { getPropertyInspectorJobs } from "../util/db/jobs";
+import { fetchDataFromDB, insertOrUpdateData } from "../../util/database";
+import { getPropertyInspectorJobs, updateBookingJob } from "../../util/db/jobs";
+import { bookPIJob } from "../../util/db/bookings";
+import ModalButton from "../../components/CustomModalBtn";
 
 function BookJobScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);
@@ -34,13 +37,44 @@ function BookJobScreen() {
         setActiveJob({ jobNumber, jobID });
     }
 
-    function bookJobPressHandler() {
+    async function bookJobPressHandler() {
         setModalIsVisible((prevData) => !prevData);
+
+        const formattedDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+
+        const bookJobQuery = bookPIJob();
+        const bookParams = [
+            activeJob.jobNumber,
+            "Booked",
+            propertyInspectorID,
+            propertyInspectorID,
+            formattedDate,
+            "Booked by Property Inspector",
+            formattedDate,
+            formattedDate,
+        ];
+
+        const updateJobQuery = updateBookingJob();
+        const updateParams = [
+            1,
+            formattedDate,
+            formattedDate,
+            "%" + activeJob.jobNumber + "%",
+        ];
+
+        try {
+            await insertOrUpdateData(bookJobQuery, bookParams);
+            await insertOrUpdateData(updateJobQuery, updateParams);
+
+        } catch (error) {
+            console.error("Error booking job:", error);
+
+        }
+
         navigation.reset({
             index: 0,
             routes: [{ name: "Dashboard" }],
         });
-        // navigation.navigate("Dashboard");
     }
 
     function jobDetailsNavigateHandler() {
@@ -84,42 +118,8 @@ function BookJobScreen() {
                 title={activeJob.jobNumber}
                 subtitle="Job Number"
             >
-                <View style={styles.row}>
-                    <Pressable
-                        android_ripple={{ color: Colors.ripple }}
-                        onPress={bookJobPressHandler}
-                        style={({ pressed }) =>
-                            pressed
-                                ? [styles.pressedItem, styles.buttonOptions]
-                                : styles.buttonOptions
-                        }
-                    >
-                        <Text style={styles.text}>Book</Text>
-                        <AntDesign
-                            name="rightcircle"
-                            size={24}
-                            color={Colors.primary}
-                        />
-                    </Pressable>
-                </View>
-                <View style={styles.row}>
-                    <Pressable
-                        android_ripple={{ color: Colors.ripple }}
-                        onPress={jobDetailsNavigateHandler}
-                        style={({ pressed }) =>
-                            pressed
-                                ? [styles.pressedItem, styles.buttonOptions]
-                                : styles.buttonOptions
-                        }
-                    >
-                        <Text style={styles.text}>Job Details</Text>
-                        <AntDesign
-                            name="rightcircle"
-                            size={24}
-                            color={Colors.primary}
-                        />
-                    </Pressable>
-                </View>
+                <ModalButton title="Book" onPress={bookJobPressHandler} />
+                <ModalButton title="Job Details" onPress={jobDetailsNavigateHandler} />
             </CustomModal>
 
             <ScreenTitle title="List of Unbooked Jobs" />
@@ -192,32 +192,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 18,
     },
-    pressedItem: {
-        opacity: 0.75,
-        backgroundColor: Colors.ripple,
-    },
-    buttonOptions: {
-        flexDirection: "row",
-        flex: 1,
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 24,
-    },
-    row: {
-        backgroundColor: "white",
-        height: 50,
-        borderRadius: 10,
-        elevation: 4,
-        shadowColor: "black",
-        shadowOpacity: 0.25,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 8,
-        marginBottom: 8,
-        width: "100%",
-    },
-    text: {
-        textAlign: "center",
-    }
 });
 
 export default BookJobScreen;

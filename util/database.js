@@ -1,4 +1,7 @@
 import * as SQLite from 'expo-sqlite';
+import axiosInstance from './axiosInstance';
+import { format } from 'date-fns';
+
 import { usersTable } from './db/users';
 import { clientTypesTable } from './db/clientTypes';
 import { chargingSchemesTable } from './db/chargingSchemes';
@@ -16,7 +19,7 @@ import { propertyInspectorsTable } from './db/propertyInspectors';
 import { propertyInspectorPostcodesTable } from './db/propertyInspectorPostcodes';
 import { propertyInspectorQualificationsTable } from './db/propertyInspectorQualifications';
 import { propertyInspectorMeasuresTable } from './db/propertyInspectorMeasures';
-import { getPropertyInspectorJobs, jobsTable } from './db/jobs';
+import { jobsTable } from './db/jobs';
 import { jobMeasuresTable } from './db/jobMeasures';
 import { customersTable } from './db/customers';
 import { propertiesTable } from './db/properties';
@@ -28,7 +31,7 @@ import { propertyInspectorJobTypesTable } from './db/propertyInspectorJobTypes';
 import { bookingsTable } from './db/bookings';
 import { accountLevelsTable } from './db/accountLevels';
 import { userTypesTable } from './db/userTypes';
-import axiosInstance from './axiosInstance';
+import { storeLogs, tempSyncLogsTable } from './db/tempSyncLogs';
 
 const tableSchemas = [
     accountLevelsTable,
@@ -60,6 +63,7 @@ const tableSchemas = [
     clientInstallersTable,
     propertyInspectorJobTypesTable,
     bookingsTable,
+    tempSyncLogsTable,
 ];
 
 let dbInstance = null;
@@ -199,4 +203,44 @@ export const fetchDataFromDB = async (fetchedQuery, params = null) => {
     return result;
 }
 
+export const insertOrUpdateData = async (fetchedQuery, params) => {
+    const db = await getDB();
 
+    try {
+        await storeTempSyncLog(db, fetchedQuery, params);
+    } catch (error) {
+        console.error('Error storing logs:', error);
+    }
+
+    const result = await db.runAsync(fetchedQuery, params);
+    return result;
+}
+
+const storeTempSyncLog = async (db, query, params) => {
+    const storeLogsQuery = storeLogs();
+
+    const formattedDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+
+    const fullQuery = formatSqlQueryWithParams(query, params);
+
+    await db.runAsync(
+        storeLogsQuery,
+        [fullQuery, formattedDate, formattedDate] // Assuming your logging table takes (query, date)
+    );
+};
+
+const formatSqlQueryWithParams = (query, params) => {
+    let index = 0;
+    return query.replace(/\?/g, () => {
+        const value = params[index++];
+        if (value === null || value === undefined) return 'NULL';
+        if (typeof value === 'number') return value;
+        return `'${value.toString().replace(/'/g, "''")}'`;
+    });
+};
+
+export const deleteDataFromDB = async (fetchedQuery, params) => {
+    const db = await getDB();
+    const result = await db.runAsync(fetchedQuery, params);
+    return result;
+}

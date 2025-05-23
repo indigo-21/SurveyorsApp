@@ -1,34 +1,35 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
 
-import ScreenWrapper from "../components/ScreenWrapper";
-import ScreenTitle from "../components/ScreenTitle";
-import Colors from "../constants/Colors";
-
-const data = [
-    {
-        id: "Agility Standard V1",
-        name: "Agility_V1_2023_02_03",
-        age: "Feb 03, 2023",
-    },
-    {
-        id: "Agility Standard V1-1",
-        name: "Agility_V1-1_2023-07-03",
-        age: "Dec 03, 2023",
-    },
-    { id: "GSENZH 2024 V1", name: "GSENZH_V1_2024_08_06", age: "Jan 03, 2023" },
-    {
-        id: "GSENZH 2024 V1.1",
-        name: "GSENZH_V1_2024_09_02",
-        age: "Aug 03, 2023",
-    },
-    {
-        id: "GSENZH 2024 V1.2",
-        name: "GSENZH_V1_2024_09_06",
-        age: "Sep 03, 2023",
-    },
-];
+import ScreenWrapper from "../../components/ScreenWrapper";
+import ScreenTitle from "../../components/ScreenTitle";
+import Colors from "../../constants/Colors";
+import { getSurveyQuestionSets } from "../../util/db/surveyQuestionSets";
+import { fetchDataFromDB } from "../../util/database";
 
 function QuestionSetScreen() {
+    const [questionSetData, setQuestionSetData] = useState([]);
+
+    useEffect(() => {
+        const getQuestionSetQuery = getSurveyQuestionSets();
+
+        const fetchQuestionSet = async () => {
+            await fetchDataFromDB(getQuestionSetQuery)
+                .then((result) => {
+                    if (result) {
+                        setQuestionSetData(result);
+                        console.log("Question Set Data: ", result);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching question set data: ", error);
+                });
+        }
+
+        fetchQuestionSet();
+    }, []);
+
+
     return (
         <ScreenWrapper>
             <ScreenTitle title="List of Question Sets" />
@@ -38,19 +39,15 @@ function QuestionSetScreen() {
                         Question Set
                     </Text>
                     <Text style={[styles.cell, styles.header]}>Revision</Text>
-                    <Text style={[styles.cell, styles.header]}>
-                        Last Update
-                    </Text>
                 </View>
 
                 <FlatList
-                    data={data}
+                    data={questionSetData}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <View style={styles.body}>
-                            <Text style={styles.cell}>{item.id}</Text>
-                            <Text style={styles.cell}>{item.name}</Text>
-                            <Text style={styles.cell}>{item.age}</Text>
+                            <Text style={styles.cell}>{item.question_set}</Text>
+                            <Text style={styles.cell}>{item.question_revision}</Text>
                         </View>
                     )}
                 />

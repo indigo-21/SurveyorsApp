@@ -1,9 +1,9 @@
 import { StyleSheet, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 
-import ScreenWrapper from "../components/ScreenWrapper";
-import SurveyQuestions from "../components/SurveyQuestions";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import SurveyQuestions from "../../components/SurveyQuestions";
 
 const questionSet = [
     {
@@ -92,7 +92,7 @@ const questionSet = [
     },
 ];
 
-function MeasureSpecificScreen() {
+function ScoreMonitoringScreen() {
 
     return (
         <ScreenWrapper>
@@ -109,4 +109,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default MeasureSpecificScreen;
+export default ScoreMonitoringScreen;

@@ -9,13 +9,13 @@ import {
     TextInput,
     View,
 } from "react-native";
-import { login } from "../util/auth";
+import { login } from "../../util/auth";
 import { useContext, useState } from "react";
-import { AuthContext } from "../store/auth-context";
+import { AuthContext } from "../../store/auth-context";
 
-import Colors from "../constants/Colors";
-import CustomButton from "../components/CustomButton";
-import LoadingOverlay from "../components/LoadingOverlay";
+import Colors from "../../constants/Colors";
+import CustomButton from "../../components/CustomButton";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 function LoginScreen() {
     const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -54,7 +54,7 @@ function LoginScreen() {
 
     return (
         <ImageBackground
-            source={require("../assets/images/background2.jpg")}
+            source={require("../../assets/images/background2.jpg")}
             style={{ flex: 1 }}
         >
             <KeyboardAvoidingView
@@ -76,7 +76,7 @@ function LoginScreen() {
                                 }}
                             >
                                 <Image
-                                    source={require("../assets/images/agility_logo_login.png")}
+                                    source={require("../../assets/images/agility_logo_login.png")}
                                     style={{width: "80%", height: 130}}
                                 />
                             </View>
@@ -116,7 +116,7 @@ function LoginScreen() {
                         </View>
 
                         <Image
-                            source={require("../assets/images/login_screen3.png")}
+                            source={require("../../assets/images/login_screen3.png")}
                             style={{
                                 width: "100%",
                                 height: 200, // Consider using fixed height instead of "30%" for better control

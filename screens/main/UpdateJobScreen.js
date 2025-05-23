@@ -3,12 +3,12 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
 
-import ScreenWrapper from "../components/ScreenWrapper";
-import ScreenTitle from "../components/ScreenTitle";
 import DropDownPicker from "react-native-dropdown-picker";
-import Colors from "../constants/Colors";
-import CustomButton from "../components/CustomButton";
-import JobDetailsBox from "../components/JobDetailsBox";
+import Colors from "../../constants/Colors";
+import CustomButton from "../../components/CustomButton";
+import JobDetailsBox from "../../components/JobDetailsBox";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import ScreenTitle from "../../components/ScreenTitle";
 
 const status = [
     { label: "Customer No Show", value: "1" },

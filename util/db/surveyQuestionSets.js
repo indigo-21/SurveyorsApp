@@ -12,6 +12,6 @@ const surveyQuestionSetsProps = `
 
 export const surveyQuestionSetsTable = createTableSQL('survey_question_sets', surveyQuestionSetsProps);
 
-export const getSurveyQuestionSets = (table) => {
-    return `SELECT * FROM ${table}`;
+export const getSurveyQuestionSets = () => {
+    return `SELECT * FROM survey_question_sets`;
 }

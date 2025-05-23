@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Button, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import LoadingOverlay from "../components/LoadingOverlay";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 export default function QRCodeScannerScreen() {
     const navigation = useNavigation();

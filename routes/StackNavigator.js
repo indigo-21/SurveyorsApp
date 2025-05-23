@@ -2,21 +2,21 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useContext } from "react";
 import { AuthContext } from "../store/auth-context";
+import { Image } from "react-native";
 
 import Colors from "../constants/Colors";
-import DashboardScreen from "../screens/DashboardScreen";
-import CurrentVisitScreen from "../screens/CurrentVisitScreen";
-import UpdateJobScreen from "../screens/UpdateJobScreen";
-import JobDetailsScreen from "../screens/JobDetailsScreen";
-import QuestionSetScreen from "../screens/QuestionSetScreen";
-import BookJobScreen from "../screens/BookJobScreen";
-import CompletedVisitScreen from "../screens/CompletedVisitScreen";
-import SurveyScreen from "../screens/SurveyScreen";
-import LoginScreen from "../login-screens/LoginScreen";
-import QRCodeScannerScreen from "../login-screens/QRCodeScannerScreen";
-import QRCodeScreen from "../login-screens/QRCodeScreen";
-import OTPVerificationScreen from "../screens/OTPVerificationScreen";
-import { Image } from "react-native";
+import CurrentVisitScreen from "../screens/main/CurrentVisitScreen";
+import UpdateJobScreen from "../screens/main/UpdateJobScreen";
+import JobDetailsScreen from "../screens/main/JobDetailsScreen";
+import QuestionSetScreen from "../screens/main/QuestionSetScreen";
+import BookJobScreen from "../screens/main/BookJobScreen";
+import CompletedVisitScreen from "../screens/main/CompletedVisitScreen";
+import SurveyScreen from "../screens/main/SurveyScreen";
+import OTPVerificationScreen from "../screens/main/OTPVerificationScreen";
+import DashboardScreen from "../screens/main/DashboardScreen";
+import LoginScreen from "../screens/login-screens/LoginScreen";
+import QRCodeScannerScreen from "../screens/login-screens/QRCodeScannerScreen";
+import QRCodeScreen from "../screens/login-screens/QRCodeScreen";
 
 const Stack = createNativeStackNavigator();
 

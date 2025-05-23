@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import ScoreMonitoringScreen from "../screens/ScoreMonitoringScreen";
-import MeasureSpecificScreen from "../screens/MeasureSpecificScreen";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Colors from "../constants/Colors";
+import ScoreMonitoringScreen from "../screens/main/ScoreMonitoringScreen";
+import MeasureSpecificScreen from "../screens/main/MeasureSpecificScreen";
 
 function TabNavigator() {
     const Tab = createBottomTabNavigator();

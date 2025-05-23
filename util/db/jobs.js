@@ -52,22 +52,22 @@ const foreignKeys = [
 
 export const jobsTable = createTableSQL('jobs', jobParams, foreignKeys);
 
-export const getPropertyInspectorJobs = (table) => {
-    return `SELECT j.id, SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id, p.address1, p.postcode, j.cert_no, c.client_abbrevation
-            FROM ${table} j
+export const getPropertyInspectorJobs = () => {
+    return `SELECT j.id, SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id, p.address1, p.postcode, j.cert_no, c.client_abbrevation, j.job_status_id
+            FROM jobs j
 			LEFT JOIN properties p
 			ON j.id = p.job_id
 			LEFT JOIN clients c
 			ON c.id = j.client_id
             WHERE property_inspector_id = ?
-            AND job_status_id = ?
+            AND job_status_id IN (?, ?)
             GROUP BY group_id`;
 
 };
 
-export const getPropertyInspectorUnbookedJobs = (table) => {
+export const getPropertyInspectorUnbookedJobs = () => {
     return `SELECT SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id
-            FROM ${table} 
+            FROM jobs
             WHERE property_inspector_id = ? 
             AND job_status_id = ?
             GROUP BY group_id`;
@@ -86,4 +86,18 @@ export const getJobDetails = () => {
 			LEFT JOIN schemes s
 			ON s.id = j.scheme_id
             WHERE j.id = ?`;
+}
+
+export const updateBookingJob = () => {
+    return `UPDATE jobs
+            SET job_status_id = ?,
+                last_update = ?,
+                schedule_date = ?
+            WHERE job_number LIKE ?`;
+}
+
+export const updateBookedJob = () => {
+    return `UPDATE jobs
+            SET job_status_id = ?,
+            WHERE job_number LIKE ?`;
 }

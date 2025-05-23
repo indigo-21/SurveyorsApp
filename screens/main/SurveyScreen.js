@@ -1,12 +1,11 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
-import TabNavigator from "../routes/TabNavigator";
-import ConfigrationGrid from "../components/ConfigurationGrid";
-import Colors from "../constants/Colors";
-import CustomButton from "../components/CustomButton";
+import ConfigrationGrid from "../../components/ConfigurationGrid";
+import Colors from "../../constants/Colors";
+import CustomButton from "../../components/CustomButton";
 import { useState } from "react";
-import CustomModal from "../components/CustomModal";
+import CustomModal from "../../components/CustomModal";
+import TabNavigator from "../../routes/TabNavigator";
 
 function SurveyScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);

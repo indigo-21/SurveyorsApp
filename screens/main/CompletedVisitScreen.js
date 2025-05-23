@@ -3,11 +3,11 @@ import { useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
-import ScreenWrapper from "../components/ScreenWrapper";
-import JobList from "../components/JobList";
-import Colors from "../constants/Colors";
-import CustomModal from "../components/CustomModal";
-import ScreenTitle from "../components/ScreenTitle";
+import ScreenWrapper from "../../components/ScreenWrapper";
+import JobList from "../../components/JobList";
+import Colors from "../../constants/Colors";
+import CustomModal from "../../components/CustomModal";
+import ScreenTitle from "../../components/ScreenTitle";
 
 function CompletedVisitScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);
