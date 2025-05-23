@@ -98,6 +98,6 @@ export const updateBookingJob = () => {
 
 export const updateBookedJob = () => {
     return `UPDATE jobs
-            SET job_status_id = ?,
+            SET job_status_id = ?
             WHERE job_number LIKE ?`;
 }

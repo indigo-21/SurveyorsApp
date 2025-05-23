@@ -7,6 +7,8 @@ const Colors = {
   black: "#000000",
   ripple: "#c9c5c5",
   cancel: "#9d9d9d",
+  warning: "#f39c12",
+  success: "#2ecc71",
 };
 
 export default Colors;
