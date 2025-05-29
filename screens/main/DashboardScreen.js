@@ -5,8 +5,9 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 import { AuthContext } from "../../store/auth-context";
 import { DataContext } from "../../store/data-context";
-import { logout } from "../../util/auth";
+import CustomModal from "../../components/CustomModal";
 import ConfigrationGrid from "../../components/ConfigurationGrid";
+import { logout } from "../../util/auth";
 import Colors from "../../constants/Colors";
 import BoxGrid from "../../components/BoxGrid";
 import ScreenWrapper from "../../components/ScreenWrapper";
@@ -21,11 +22,15 @@ import {
     getPropertyInspectorUnbookedJobs,
 } from "../../util/db/jobs";
 import { setSyncReady } from "./services/SyncStatusService";
+import { getLogs } from "../../util/db/tempSyncLogs";
+import eventbus from "../../events/eventbus";
 
 function DashboardScreen() {
+    const [modalIsVisible, setModalIsVisible] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [url, setUrl] = useState("");
+    const [syncCount, setSyncCount] = useState(0);
 
     const isFocused = useIsFocused();
     const navigation = useNavigation();
@@ -128,6 +133,33 @@ function DashboardScreen() {
         }
     }, [isFocused]);
 
+    useEffect(() => {
+        const logsQuery = getLogs();
+        const fetchLogs = async () => {
+            try {
+                const logs = await fetchDataFromDB(logsQuery);
+                setSyncCount(logs.length);
+            } catch (error) {
+                console.error("Error fetching logs:", error);
+            }
+        };
+
+        if (isFocused) {
+            fetchLogs();
+        }
+
+        const logsChangedHandler = () => {
+            console.log('logsChanged event received');
+            fetchLogs();
+        };
+
+        eventbus.on('logsChanged', logsChangedHandler);
+
+        return () => {
+            eventbus.off('logsChanged', logsChangedHandler);
+        };
+    }, [isFocused]);
+
     const syncDataHandler = async () => {
         await AsyncStorage.setItem("db_initialized", "");
         checkAndInitialize().catch((err) => console.error("Error:", err));
@@ -149,6 +181,10 @@ function DashboardScreen() {
         navigation.navigate("CompletedVisits");
     }
 
+    function viewQueuedSyncHandler() {
+        setModalIsVisible((prevData) => !prevData);
+    };
+
     if (isLoggingOut) {
         return <LoadingOverlay message="Logging out..." />;
     }
@@ -161,6 +197,21 @@ function DashboardScreen() {
 
     return (
         <ScreenWrapper>
+            <CustomModal
+                modalVisible={modalIsVisible}
+                setModalVisible={setModalIsVisible}
+                title="Queued Sync"
+            >
+                <View style={{ flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                    <Text style={{ fontSize: 45, color: Colors.black }}>{syncCount} </Text>
+                    <Text style={{ marginBottom: 12 }}> Total Numbers of Queued Sync </Text>
+                    <Text style={{ marginTop: 10, fontSize: 12, fontStyle: "italic" }}>
+                        Note: Please allow the Queued Sync data to fully load and complete before attempting to sync.
+                        This ensures that all pending items are accurately counted and included in the sync process,
+                        helping to prevent data loss or incomplete synchronization.
+                    </Text>
+                </View>
+            </CustomModal>
             <View style={styles.userContainer}>
                 <Image
                     style={styles.image}
@@ -215,6 +266,7 @@ function DashboardScreen() {
                         importedStyles={{ width: 100 }}
                         textContent="Sync Data"
                         onPress={syncDataHandler}
+                        disabled={syncCount !== 0}
                     >
                         <FontAwesome5
                             name="sync"
@@ -225,6 +277,7 @@ function DashboardScreen() {
                     <ConfigrationGrid
                         importedStyles={{ width: 100 }}
                         textContent="Queued Sync"
+                        onPress={viewQueuedSyncHandler}
                     >
                         <FontAwesome5
                             name="clock"

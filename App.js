@@ -6,6 +6,7 @@ import AuthContextProvider from "./store/auth-context";
 import DataContextProvider from "./store/data-context";
 import { syncToServer } from "./screens/main/services/SyncService";
 import { getSyncReady } from './screens/main/services/SyncStatusService';
+import SurveyContextProvider from './store/survey-context';
 
 export default function App() {
 
@@ -46,7 +47,9 @@ export default function App() {
             <StatusBar barStyle="light-content" />
             <AuthContextProvider>
                 <DataContextProvider>
-                    <StackNavigator />
+                    <SurveyContextProvider>
+                        <StackNavigator />
+                    </SurveyContextProvider>
                 </DataContextProvider>
             </AuthContextProvider>
         </>

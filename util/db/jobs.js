@@ -98,6 +98,48 @@ export const updateBookingJob = () => {
 
 export const updateBookedJob = () => {
     return `UPDATE jobs
-            SET job_status_id = ?
+            SET job_status_id = ?,
+            last_update = ?
             WHERE job_number LIKE ?`;
 }
+
+export const closeJob = () => {
+    return `UPDATE jobs
+            SET job_status_id = ?,
+                last_update = ?,
+                close_date = ?
+            WHERE job_number LIKE ?`;
+};
+
+export const updateJobForCustomerNoShow = () => {
+    return `UPDATE jobs
+            SET job_status_id = ?,
+                last_update = ?,
+                max_noshow = max_noshow + 1
+            WHERE job_number LIKE ?`;
+};
+
+export const getClientMaxNoShow = () => {
+    return `SELECT csm.maximum_no_show FROM jobs j
+            LEFT JOIN clients c
+            ON c.id = j.client_id
+            LEFT JOIN client_sla_metrics csm
+            ON csm.client_id = c.id
+            WHERE job_number LIKE ?`;
+};
+
+export const getJobDetailsByJobNumber = () => {
+    return `SELECT * FROM jobs
+            WHERE job_number LIKE ?`;
+};
+
+export const getJobSummary = () => {
+    return `SELECT j.id, j.job_number, m.id as measure_id, m.measure_cat, jm.umr, s.short_name, s.survey_question_set_id FROM jobs j 
+            LEFT JOIN job_measures jm 
+            ON jm.job_id = j.id
+            LEFT JOIN measures m 
+            ON m.id = jm.measure_id
+            LEFT JOIN schemes s
+            ON s.id = j.scheme_id
+            WHERE j.job_number LIKE ?`;
+};

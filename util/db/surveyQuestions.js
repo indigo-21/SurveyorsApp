@@ -30,3 +30,24 @@ const foreignKeys = [
 ];
 
 export const surveyQuestionsTable = createTableSQL('survey_questions', surveyQuestionsProps, foreignKeys);
+
+export const getSurveyQuestions = () => {
+    return `SELECT
+                *
+            FROM
+                survey_questions
+            WHERE
+                (measure_cat LIKE "All Measures" OR measure_cat = ?) 
+                AND score_monitoring = ?
+                AND survey_question_set_id = ?`;
+};
+
+export const getAllSurveyQuestions = () => {
+    return `SELECT
+                *
+            FROM
+                survey_questions
+            WHERE
+                (measure_cat LIKE "All Measures" OR measure_cat = ?) 
+                AND survey_question_set_id = ?`;
+};

@@ -2,13 +2,21 @@ import React from "react";
 import { View, StyleSheet, Pressable, ImageBackground, Text } from "react-native";
 import Colors from "../constants/Colors";
 
-function ConfigrationGrid({ importedStyles, textContent, onPress, children }) {
+function ConfigrationGrid({ importedStyles, textContent, onPress, disabled, active, children }) {
     return (
         <View style={styles.container}>
             <View style={[styles.gridItem, importedStyles]}>
-                <Pressable style={styles.button} onPress={onPress} android_ripple={{ color: Colors.ripple }}>
+                <Pressable
+                    style={[
+                        styles.button,
+                        disabled ? { backgroundColor: "#cfcfcf", borderRadius: 6 } : null
+                    ]}
+                    onPress={onPress}
+                    disabled={disabled}
+                    android_ripple={{ color: Colors.ripple }}
+                >
                     <View style={styles.content}>{children}</View>
-                    <Text style={styles.textBottomCenter}>{textContent}</Text>
+                    <Text style={active ? [styles.textBottomCenter, { color: Colors.white }] : styles.textBottomCenter}>{textContent}</Text>
                 </Pressable>
             </View>
         </View>

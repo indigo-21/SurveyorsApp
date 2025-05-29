@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 
-function CustomButton({ importedStyles, text, onPress }) {
+function CustomButton({ importedStyles, text, onPress, disabled }) {
     return (
-        <View style={{ flex: 1, flexDirection: "row"}}>
+        <View style={{ flex: 1, flexDirection: "row" }}>
             <Pressable
+                disabled={disabled}
                 android_ripple={{ color: Colors.ripple }}
                 onPress={onPress}
                 style={({ pressed }) =>
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         elevation: 2,
         marginHorizontal: 8,
-        overflow: "hidden" 
+        overflow: "hidden"
     },
     textStyle: {
         color: Colors.white,

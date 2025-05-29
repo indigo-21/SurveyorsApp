@@ -1,20 +1,19 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { format } from "date-fns";
 
-import ScreenWrapper from "../../components/ScreenWrapper";
-import JobList from "../../components/JobList";
+import { AuthContext } from "../../store/auth-context";
 import Colors from "../../constants/Colors";
+import JobList from "../../components/JobList";
 import CustomModal from "../../components/CustomModal";
 import ScreenTitle from "../../components/ScreenTitle";
-import { getPropertyInspectorJobs, updateBookedJob } from "../../util/db/jobs";
-import { AuthContext } from "../../store/auth-context";
-import { fetchDataFromDB, insertOrUpdateData } from "../../util/database";
+import ScreenWrapper from "../../components/ScreenWrapper";
 import CustomModalBtn from "../../components/CustomModalBtn";
 import { bookPIJob } from "../../util/db/bookings";
+import { fetchDataFromDB, insertOrUpdateData } from "../../util/database";
+import { getPropertyInspectorJobs, updateBookedJob } from "../../util/db/jobs";
 
 function CurrentVisitScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);
@@ -23,14 +22,16 @@ function CurrentVisitScreen() {
         jobID: "",
         isBooked: false,
     });
-    const [refetchJobs, setFetchJobs] = useState(true);
+    const [refetchJobs, setRefetchJobs] = useState(true);
     const [jobList, setJobList] = useState([]);
+    const isFocused = useIsFocused();
     const authContext = useContext(AuthContext);
+    const navigation = useNavigation();
 
     const propertyInspector = authContext.propertyInspector;
     const propertyInspectorID = propertyInspector.user.property_inspector.id;
+    const userID = propertyInspector.user.id;
 
-    const navigation = useNavigation();
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -39,22 +40,23 @@ function CurrentVisitScreen() {
     }, [navigation]);
 
     useEffect(() => {
-        const getPiJobsQuery = getPropertyInspectorJobs();
+        if (refetchJobs || isFocused) {
+            console.log('fetching jobs....');
+            const getPiJobsQuery = getPropertyInspectorJobs();
 
-        const fetchJobs = async () => {
-            await fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 1, 2])
-                .then((result) => {
-                    setJobList(result);
-                })
-                .catch((error) => {
-                    console.error("Error fetching jobs:", error);
-                });
-        }
+            const fetchJobs = async () => {
+                await fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 1, 2])
+                    .then((result) => {
+                        setJobList(result);
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching jobs:", error);
+                    });
+            }
 
-        if (refetchJobs) {
             fetchJobs();
         }
-    }, [refetchJobs]);
+    }, [refetchJobs, isFocused]);
 
     function navigationPressHandler(job) {
         setModalIsVisible((prevData) => !prevData);
@@ -77,7 +79,7 @@ function CurrentVisitScreen() {
 
     function updateNavigateHandler() {
         setModalIsVisible((prevData) => !prevData);
-        navigation.navigate("UpdateJob");
+        navigation.navigate("UpdateJob", { jobID: activeJob.jobID, jobNumber: activeJob.jobNumber });
     }
 
     function jobDetailsNavigateHandler() {
@@ -87,23 +89,23 @@ function CurrentVisitScreen() {
 
     function surveyNavigateHandler() {
         setModalIsVisible((prevData) => !prevData);
-        navigation.navigate("Survey");
+        navigation.navigate("Survey", { jobID: activeJob.jobID, jobNumber: activeJob.jobNumber });
     }
 
     async function bookJobPressHandler() {
         setModalIsVisible((prevData) => !prevData);
-        setFetchJobs((prevData) => !prevData);
+        setRefetchJobs((prevData) => !prevData);
 
         const formattedDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
         const bookJobQuery = bookPIJob();
         const bookParams = [
             activeJob.jobNumber,
-            "Accepted By " + propertyInspector.user.first_name + " " + propertyInspector.user.last_name,
-            propertyInspectorID,
+            "Booked",
+            userID,
             propertyInspectorID,
             formattedDate,
-            "Booked by Property Inspector",
+            "Accepted By " + propertyInspector.user.firstname + " " + propertyInspector.user.lastname,
             formattedDate,
             formattedDate,
         ];
@@ -111,6 +113,7 @@ function CurrentVisitScreen() {
         const updateJobQuery = updateBookedJob();
         const updateParams = [
             1,
+            formattedDate,
             "%" + activeJob.jobNumber + "%",
         ];
 
@@ -123,7 +126,7 @@ function CurrentVisitScreen() {
 
         }
 
-        setFetchJobs((prevData) => !prevData);
+        setRefetchJobs((prevData) => !prevData);
 
 
         // navigation.reset({
@@ -131,8 +134,6 @@ function CurrentVisitScreen() {
         //     routes: [{ name: "Dashboard" }],
         // });
     }
-
-    console.log(modalIsVisible);
 
 
     return (
@@ -162,7 +163,7 @@ function CurrentVisitScreen() {
             <View style={styles.container}>
                 <FlatList
                     showsVerticalScrollIndicator={false}
-                    data={jobList}
+                    data={[...jobList].reverse()}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <JobList onPress={() => navigationPressHandler(item)}>

@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     titleRow: {
-        marginBottom: 16,
+        marginBottom: 8,
     },
 });
 

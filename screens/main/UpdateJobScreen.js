@@ -1,20 +1,23 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useContext, useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
-
+import { format } from "date-fns";
 import DropDownPicker from "react-native-dropdown-picker";
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+
+import { AuthContext } from "../../store/auth-context";
 import Colors from "../../constants/Colors";
 import CustomButton from "../../components/CustomButton";
-import JobDetailsBox from "../../components/JobDetailsBox";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import ScreenTitle from "../../components/ScreenTitle";
+import BookingService from "./services/BookingService";
 
 const status = [
-    { label: "Customer No Show", value: "1" },
-    { label: "Customer Cancelled", value: "2" },
-    { label: "Customer Required Rebook", value: "3" },
-    { label: "Rebook", value: "4" },
+    { id: "1", label: "Customer No Show", value: "1" },
+    { id: "15", label: "Customer Cancelled", value: "2" },
+    { id: "23", label: "Customer Required Rebook", value: "3" },
+    { id: "1", label: "Rebook", value: "4" },
 ];
 
 function UpdateJobScreen() {
@@ -22,6 +25,15 @@ function UpdateJobScreen() {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
     const [items, setItems] = useState(status);
+    const [isRebook, setIsRebook] = useState(false);
+    const [isPickerVisible, setPickerVisible] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const route = useRoute();
+    const authContext = useContext(AuthContext);
+
+    const propertyInspector = authContext.propertyInspector;
+
+    const { jobID, jobNumber } = route.params;
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -29,16 +41,57 @@ function UpdateJobScreen() {
         });
     }, [navigation]);
 
+    const navigateHandler = () => {
+        navigation.navigate("JobDetails", { jobID, jobNumber });
+    };
+
+    const updateJobHandler = async (value) => {
+
+        if (value === "4") {
+            setIsRebook(true);
+        } else {
+            setIsRebook(false);
+        }
+        // BookingService(value, status, jobNumber, propertyInspector, selectedDate);
+
+    };
+
+    const submitUpdateJobHandler = async () => {
+        try {
+            await BookingService(value, status, jobNumber, propertyInspector, selectedDate);
+            setTimeout(() => {
+                navigation.goBack();
+            }, 300);
+        } catch (error) {
+            console.error("Error updating job:", error);
+        }
+    };
+
+    const showPicker = () => {
+        setPickerVisible(true);
+    };
+
+    const hidePicker = () => {
+        setPickerVisible(false);
+    };
+
+    const handleConfirm = (date) => {
+        setSelectedDate(date);
+        hidePicker();
+    };
+
     return (
         <ScreenWrapper>
-            <ScreenTitle title="Update Job: TMK0000000024" />
+            <ScreenTitle title={`Update Job: ${jobNumber}`} />
 
             <DropDownPicker
                 open={open}
                 value={value}
                 items={items}
+                itemKey="value"
                 setOpen={setOpen}
                 setValue={setValue}
+                onChangeValue={(value) => { updateJobHandler(value) }}
                 setItems={setItems}
                 placeholder="Select a Status"
                 style={{
@@ -63,6 +116,7 @@ function UpdateJobScreen() {
                     borderColor: "#ccc",
                     borderRadius: 10,
                     height: "auto",
+                    marginTop: 8,
                 }}
                 listItemLabelStyle={{
                     textAlign: "center",
@@ -80,6 +134,39 @@ function UpdateJobScreen() {
                 }}
             />
 
+            {isRebook &&
+                <>
+                    <View style={styles.container}>
+                        <View style={styles.content}>
+                            <CustomButton
+                                text="Select Date & Time"
+                                importedStyles={{
+                                    backgroundColor: Colors.primary,
+                                    color: Colors.white,
+                                    marginTop: 16,
+                                }}
+                                onPress={showPicker}
+                            />
+                        </View>
+
+                        <Text style={[{ backgroundColor: Colors.white, margin: 16, padding: 8, borderRadius: 8, textAlign: "center", width: "80%", fontSize: 16, }]}>
+                            Selected: {format(selectedDate, 'yyyy-MM-dd HH:mm:ss')}
+                        </Text>
+
+                        <DateTimePickerModal
+                            isVisible={isPickerVisible}
+                            mode="datetime"
+                            date={selectedDate}
+                            onConfirm={handleConfirm}
+                            onCancel={hidePicker}
+                            is24Hour={false} // Set to true for 24-hour format
+                            themeVariant="light"  // <-- This is critical on iOS
+                            textColor="#000000"   // <-- Makes text visible on white background
+                        />
+                    </View>
+                </>
+            }
+
             <View style={styles.buttonContainer}>
                 <CustomButton
                     text="Cancel"
@@ -95,62 +182,29 @@ function UpdateJobScreen() {
                         backgroundColor: Colors.primary,
                         color: Colors.white,
                     }}
+                    onPress={() => submitUpdateJobHandler()}
                 />
             </View>
+            <View style={{ flex: 1, justifyContent: "flex-end", }}>
+                <View style={styles.container}>
+                    <Text style={[styles.text, { fontStyle: "italic", fontSize: 13 }]}>
+                        Click the button below to view the job details.
+                    </Text>
+                </View>
 
-            <View style={styles.container}>
-                <JobDetailsBox title="Job Location">
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>Owner Name</Text>
-                        <Text style={styles.text}>Someone</Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>Email</Text>
-                        <Text style={styles.text}>
-                            someonetesting@gmail.com
-                        </Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>Contact </Text>
-                        <Text style={styles.text}>44628172381</Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>
-                            Alternative Contact
-                        </Text>
-                        <Text style={styles.text}>N/A</Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>City</Text>
-                        <Text style={styles.text}>Birmingham</Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>Address</Text>
-                        <Text style={styles.text}>Third Avenue</Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>County</Text>
-                        <Text style={styles.text}>West Midlands</Text>
-                    </View>
-                    <View style={styles.content}>
-                        <Text style={styles.textColumn}>Postcode</Text>
-                        <Text style={styles.text}>B9 5RJ</Text>
-                    </View>
-
-                    <View style={styles.content}>
-                        <CustomButton
-                            text="More Details"
-                            importedStyles={{
-                                backgroundColor: Colors.primary,
-                                color: Colors.white,
-                                marginTop: 16,
-                            }}
-                            onPress={() => navigation.navigate("JobDetails")}
-                        />
-                    </View>
-                </JobDetailsBox>
+                <View style={styles.content}>
+                    <CustomButton
+                        text="Job Details"
+                        importedStyles={{
+                            backgroundColor: Colors.primary,
+                            color: Colors.white,
+                            marginTop: 16,
+                        }}
+                        onPress={navigateHandler}
+                    />
+                </View>
             </View>
-        </ScreenWrapper>
+        </ScreenWrapper >
     );
 }
 
@@ -172,6 +226,10 @@ const styles = StyleSheet.create({
     text: {
         color: Colors.black,
         marginHorizontal: 8,
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+        margin: 8,
     },
     textColumn: {
         color: Colors.black,
@@ -182,6 +240,8 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         marginTop: 16,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
 

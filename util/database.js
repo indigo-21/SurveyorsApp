@@ -118,8 +118,7 @@ export const initializeDB = async () => {
 };
 
 export const dropAllTables = async () => {
-    const db = await SQLite.openDatabaseAsync('agility_eco.db');
-
+    const db = await getDB();
 
     try {
         await db.withTransactionAsync(async () => {
@@ -202,6 +201,12 @@ export const fetchDataFromDB = async (fetchedQuery, params = null) => {
     const result = await db.getAllAsync(fetchedQuery, params ?? []);
     return result;
 }
+
+export const fetchFirstDataFromDB = async (fetchedQuery, params = null) => {
+    const db = await getDB();
+    const result = await db.getFirstAsync(fetchedQuery, params ?? []);
+    return result;
+};
 
 export const insertOrUpdateData = async (fetchedQuery, params) => {
     const db = await getDB();

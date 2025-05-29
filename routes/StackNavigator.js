@@ -17,6 +17,7 @@ import DashboardScreen from "../screens/main/DashboardScreen";
 import LoginScreen from "../screens/login-screens/LoginScreen";
 import QRCodeScannerScreen from "../screens/login-screens/QRCodeScannerScreen";
 import QRCodeScreen from "../screens/login-screens/QRCodeScreen";
+import SummaryScreen from "../screens/main/SummaryScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -111,6 +112,11 @@ function AuthenticatedStack() {
                 <Stack.Screen
                     name="Survey"
                     component={SurveyScreen}
+                />
+
+                <Stack.Screen
+                    name="Summary"
+                    component={SummaryScreen}
                 />
             </Stack.Navigator>
         </NavigationContainer>

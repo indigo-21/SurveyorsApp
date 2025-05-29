@@ -1,5 +1,5 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { format } from 'date-fns';
 
@@ -13,6 +13,7 @@ import { fetchDataFromDB, insertOrUpdateData } from "../../util/database";
 import { getPropertyInspectorJobs, updateBookingJob } from "../../util/db/jobs";
 import { bookPIJob } from "../../util/db/bookings";
 import ModalButton from "../../components/CustomModalBtn";
+import { AuthContext } from "../../store/auth-context";
 
 function BookJobScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);
@@ -23,7 +24,10 @@ function BookJobScreen() {
         jobNumber: "",
         jobID: "",
     });
+    const authContext = useContext(AuthContext);
+    const propertyInspector = authContext.propertyInspector;
     const propertyInspectorID = route.params?.propertyInspectorID;
+    const userID = propertyInspector.user.id;
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -46,7 +50,7 @@ function BookJobScreen() {
         const bookParams = [
             activeJob.jobNumber,
             "Booked",
-            propertyInspectorID,
+            userID,
             propertyInspectorID,
             formattedDate,
             "Booked by Property Inspector",

@@ -1,41 +1,50 @@
 {
-  "expo": {
-    "name": "Surveyors App",
-    "slug": "Surveyors App",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/agility_logo_login.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/agility_logo_login.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fff"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/agility_logo_login.png",
-        "backgroundColor": "#fff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.SurveyorsApp"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow Agility Eco to access your camera",
-          "microphonePermission": "Allow Agility Eco to access your microphone",
-          "recordAudioAndroid": true
-        }
-      ],
-      "expo-sqlite"
-    ]
-  }
+    "expo": {
+        "name": "Surveyors App",
+        "slug": "Surveyors App",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/agility_logo_login.png",
+        "userInterfaceStyle": "light",
+        "newArchEnabled": true,
+        "splash": {
+            "image": "./assets/images/agility_logo_login.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#fff"
+        },
+        "ios": {
+            "supportsTablet": true
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/agility_logo_login.png",
+                "backgroundColor": "#fff"
+            },
+            "edgeToEdgeEnabled": true,
+            "package": "com.anonymous.SurveyorsApp"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": [
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Allow Agility Eco to access your camera",
+                    "microphonePermission": "Allow Agility Eco to access your microphone",
+                    "recordAudioAndroid": true
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "The app accesses your photos to let you upload images",
+                    "cameraPermission": "Allow Agility Eco to access your camera",
+                    "microphonePermission": "Allow Agility Eco to access your microphone",
+                    "recordAudioAndroid": true
+                }
+            ],
+            "expo-sqlite"
+        ]
+    }
 }

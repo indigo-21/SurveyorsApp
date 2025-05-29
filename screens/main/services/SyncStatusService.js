@@ -1,4 +1,4 @@
-let isSyncReady = false;
+export let isSyncReady = false;
 
 export const setSyncReady = (ready) => {
     isSyncReady = ready;

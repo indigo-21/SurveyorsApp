@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: "row",
         backgroundColor: "white",
-        marginVertical: 5,
+        margin: 5,
         borderRadius: 10,
         elevation: 4,
         shadowColor: "black",
@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 8,
         alignItems: "center",
-        width: "100%",
     },
     button: {
         flexDirection: "row",

@@ -1,17 +1,67 @@
+import { useContext, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 import ConfigrationGrid from "../../components/ConfigurationGrid";
 import Colors from "../../constants/Colors";
 import CustomButton from "../../components/CustomButton";
-import { useState } from "react";
 import CustomModal from "../../components/CustomModal";
 import TabNavigator from "../../routes/TabNavigator";
+import ScreenTitle from "../../components/ScreenTitle";
+import { getJobMeasures } from "../../util/db/jobMeasures";
+import { fetchDataFromDB } from "../../util/database";
+import { SurveyContext } from "../../store/survey-context";
 
 function SurveyScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);
+    const [schemeList, setSchemeList] = useState([]);
+    const route = useRoute();
+    const surveyContext = useContext(SurveyContext);
+    const navigation = useNavigation();
+
+    const { jobNumber, jobID } = route.params || {};
 
     const detailsHandler = () => {
         setModalIsVisible((prevData) => !prevData);
+    };
+
+    useEffect(() => {
+        const getJobMeasuresQuery = getJobMeasures();
+
+        const fetchJobMeasures = async () => {
+            await fetchDataFromDB(getJobMeasuresQuery, ["%" + jobNumber + "%"])
+                .then((data) => {
+                    setSchemeList(data);
+                    surveyContext.storeJobInfo({
+                        measureId: data[0].measure_id,
+                        surveyQuestionSetId: data[0].survey_question_set_id,
+                        schemeId: data[0].scheme_id,
+                        info: data[0].info,
+                        description: data[0].description,
+                        shortName: data[0].short_name,
+                        jobId: jobID,
+                        jobNumber: jobNumber,
+                        measureCat: data[0].measure_cat,
+                        umr: data[0].umr,
+                    });
+
+                }).catch((error) => {
+                    console.error("Error fetching job measures:", error);
+                });
+        };
+
+        fetchJobMeasures();
+
+    }, []);
+
+    const changeMeasureHandler = (data) => {
+        surveyContext.storeJobInfo({
+            measureId: data.measure_id,
+            info: data.info,
+            description: data.description,
+            measureCat: data.measure_cat,
+            umr: data.umr,
+        });
     };
 
     return (
@@ -19,14 +69,13 @@ function SurveyScreen() {
             <CustomModal
                 modalVisible={modalIsVisible}
                 setModalVisible={setModalIsVisible}
-                title="H_CONT"
-                subtitle="Lodgement Type"
+                title={surveyContext.jobInfo.measureCat}
+                subtitle="Measure Cat"
             >
                 <View style={styles.content}>
                     <Text style={styles.contentTitle}>Scheme Measure Info</Text>
                     <Text style={styles.contentText}>
-                        [Gas] Broken replacement - no pre-existing heating
-                        controls - B_Broken_solid_nopreHCs
+                        {surveyContext.jobInfo.info}
                     </Text>
                 </View>
                 <View style={styles.content}>
@@ -35,13 +84,14 @@ function SurveyScreen() {
                         Energy Company Obligation (ECO)
                     </Text>
                     <Text style={styles.contentDescription}>
-                        The Energy Company Obligation (ECO) is a government
-                        energy efficiency scheme in Great Britain to help reduce
-                        carbon emissions and tackle fuel poverty.
+                        {surveyContext.jobInfo.description}
                     </Text>
                 </View>
             </CustomModal>
             <View style={styles.measureContainer}>
+
+                <ScreenTitle title={`Job Number: ${jobNumber}`} size={16} />
+
                 <ScrollView
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
@@ -52,29 +102,37 @@ function SurveyScreen() {
                     }}
                     contentContainerStyle={{ alignItems: "center" }} // Align items vertically
                 >
+                    {schemeList.map((item, index) => {
+                        return (
+                            <ConfigrationGrid
+                                key={item.id}
+                                importedStyles={
+                                    surveyContext.jobInfo.measureId === item.measure_id && surveyContext.jobInfo.umr === item.umr ?
+                                        { backgroundColor: Colors.primary, width: 120 } :
+                                        { width: 120 }
+                                }
+                                textContent={`(${item.short_name})`}
+                                onPress={() => changeMeasureHandler(item)}
+                                active={surveyContext.jobInfo.measureId === item.measure_id && surveyContext.jobInfo.umr === item.umr}
+                            >
+                                <Text style={
+                                    surveyContext.jobInfo.measureId === item.measure_id && surveyContext.jobInfo.umr === item.umr ?
+                                        [styles.text, { color: Colors.white }] :
+                                        styles.text
+                                }>
+                                    {item.measure_cat}
+                                </Text>
+                            </ConfigrationGrid>
+                        );
+                    })}
                     <ConfigrationGrid
                         importedStyles={{ width: 120 }}
-                        textContent="(ECO)"
+                        textContent="Review"
+                        onPress={() => navigation.navigate("Summary", { jobNumber })}
                     >
-                        <Text style={styles.text}>H_CONT</Text>
-                    </ConfigrationGrid>
-                    <ConfigrationGrid
-                        importedStyles={{ width: 120 }}
-                        textContent="(ECO)"
-                    >
-                        <Text style={styles.text}>BOILER</Text>
-                    </ConfigrationGrid>
-                    <ConfigrationGrid
-                        importedStyles={{ width: 120 }}
-                        textContent="(ECO)"
-                    >
-                        <Text style={styles.text}>UFI</Text>
-                    </ConfigrationGrid>
-                    <ConfigrationGrid
-                        importedStyles={{ width: 120 }}
-                        textContent="(ECO)"
-                    >
-                        <Text style={styles.text}>Summary</Text>
+                        <Text style={styles.text}>
+                            Summary
+                        </Text>
                     </ConfigrationGrid>
                 </ScrollView>
                 <View style={styles.measureInfoContainer}>
@@ -88,15 +146,6 @@ function SurveyScreen() {
                         text="Measure Details"
                         onPress={detailsHandler}
                     />
-                    {/* <View style={styles.measureSubInfoContainer}>
-                        <Text style={styles.measureTitle}>
-                            Scheme Measure Info
-                        </Text>
-                        <Text style={styles.measureSubTitle}>
-                            [Gas] Broken replacement - no pre-existing heating
-                            controls - B_Broken_solid_nopreHCs
-                        </Text>
-                    </View> */}
                 </View>
             </View>
 
@@ -125,7 +174,6 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 14,
-        color: Colors.black,
     },
     measureInfoContainer: {
         flex: 1,
@@ -148,6 +196,7 @@ const styles = StyleSheet.create({
         color: Colors.black,
     },
     content: {
+        width: "100%",
         padding: 16,
         marginBottom: 8,
         backgroundColor: Colors.white,
