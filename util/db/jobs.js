@@ -53,7 +53,13 @@ const foreignKeys = [
 export const jobsTable = createTableSQL('jobs', jobParams, foreignKeys);
 
 export const getPropertyInspectorJobs = () => {
-    return `SELECT j.id, SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id, p.address1, p.postcode, j.cert_no, c.client_abbrevation, j.job_status_id
+    return `SELECT j.id, 
+                SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id,
+                p.address1,
+                p.postcode,
+                j.cert_no,
+                c.client_abbrevation,
+                j.job_status_id
             FROM jobs j
 			LEFT JOIN properties p
 			ON j.id = p.job_id
@@ -62,6 +68,55 @@ export const getPropertyInspectorJobs = () => {
             WHERE property_inspector_id = ?
             AND job_status_id IN (?, ?)
             GROUP BY group_id`;
+
+};
+
+export const getFilteredPropertyInspectorJobs = (value = {}) => {
+    let baseQuery = `
+                SELECT j.id, 
+                    SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id,
+                    p.address1,
+                    p.postcode,
+                    j.cert_no,
+                    c.client_abbrevation,
+                    j.job_status_id,
+                    m.measure_cat,
+                    js.description
+                FROM jobs j
+                LEFT JOIN properties p ON j.id = p.job_id
+                LEFT JOIN clients c ON c.id = j.client_id
+                LEFT JOIN job_measures jm ON jm.job_id = j.id
+                LEFT JOIN measures m ON m.id = jm.measure_id
+                LEFT JOIN job_statuses js ON js.id = j.job_status_id
+                WHERE property_inspector_id = ?
+                AND job_status_id IN (?, ?)
+                `;
+
+    let params = [value.propertyInspectorID, 1, 2];
+
+    if (value.measureCat) {
+        baseQuery += ` AND m.measure_cat = ?`;
+        params.push(value.measureCat);
+    }
+
+    if (value.postcode) {
+        baseQuery += ` AND p.postcode LIKE ?`;
+        params.push(`%${value.postcode}%`);
+    }
+
+    if (value.jobStatus) {
+        baseQuery += ` AND js.description LIKE ?`;
+        params.push(`%${value.jobStatus}%`);
+    }
+
+    baseQuery += ` GROUP BY group_id`;
+
+    const returnValues = {
+        baseQuery,
+        params
+    };
+
+    return returnValues;
 
 };
 
@@ -142,4 +197,28 @@ export const getJobSummary = () => {
             LEFT JOIN schemes s
             ON s.id = j.scheme_id
             WHERE j.job_number LIKE ?`;
+};
+
+export const updateCompletedJobs = () => {
+    return `UPDATE jobs
+            SET job_status_id = ?,
+                last_update = ?,
+                job_remediation_type = ?,
+                rework_deadline = ?
+            WHERE id LIKE ?`;
+};
+
+export const getScheduleJobs = () => {
+    return `SELECT SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id, j.schedule_date, j.first_visit_by, j.deadline, cus.customer_name, cli.client_abbrevation, p.house_flat_prefix, p.address1, js.description FROM jobs j 
+            LEFT JOIN job_statuses js 
+            ON js.id = j.job_status_id
+            LEFT JOIN customers cus
+            ON cus.job_id = j.id
+            LEFT JOIN clients cli 
+            ON cli.id = j.client_id
+            LEFT JOIN properties p
+            ON p.job_id = j.id
+            WHERE j.property_inspector_id = ? 
+            AND job_status_id IN (1, 2, 23, 24)
+            GROUP BY group_id`;
 };

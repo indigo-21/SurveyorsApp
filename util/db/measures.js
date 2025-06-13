@@ -14,3 +14,7 @@ const measuresProps = `
 `;
 
 export const measuresTable = createTableSQL('measures', measuresProps);
+
+export const getAllMeasures = () => {
+    return `SELECT * FROM measures`;
+};

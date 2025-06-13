@@ -27,12 +27,12 @@ export const getJobMeasures = () => {
                 m.measure_cat,
                 jm.umr,
                 jm.info,
-                j.id,
+                j.id as job_id,
                 s.short_name,
                 m.id as measure_id,
                 s.description,
                 j.scheme_id,
-                s.survey_question_set_id FROM jobs j
+                s.survey_question_set_id as survey_question_set_id FROM jobs j
             LEFT JOIN job_measures jm
             ON jm.job_id = j.id
             LEFT JOIN measures m

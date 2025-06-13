@@ -1,30 +1,45 @@
+import { useContext, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View, TextInput } from "react-native";
-import { useContext, useState } from "react";
-import Colors from "../constants/Colors";
 import { Dropdown } from "react-native-element-dropdown";
+import * as Location from "expo-location";
+
+import Colors from "../constants/Colors";
 import { SurveyContext } from "../store/survey-context";
 import ImageCapture from "./ImageCapture";
 
 function SurveyQuestions({ questionSet }) {
     const surveyContext = useContext(SurveyContext);
+    const [location, setLocation] = useState("");
+    const [errorMsg, setErrorMsg] = useState(null);
 
-    // const handleOpen = (naAllowed, unableToValidateAllowed) => {
-    //     if (!unableToValidateAllowed) {
-    //         setItems((prevItems) =>
-    //             prevItems.filter((item) => item.value !== "Unable to Validate"),
-    //         );
-    //     }
+    useEffect(() => {
+        (async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                setErrorMsg("Permission to access location was denied");
+                return;
+            }
 
-    //     if (!naAllowed) {
-    //         setItems((prevItems) =>
-    //             prevItems.filter((item) => item.value !== "N/A"),
-    //         );
-    //     }
-    // };
+            let location = await Location.getCurrentPositionAsync({});
+            setLocation(
+                location.coords.latitude + ", " + location.coords.longitude,
+            );
+        })();
+    }, []);
 
-    const setValueHandler = (value, id, option) => {
-        surveyContext.setValueHandler(surveyContext.jobInfo, value, id, option);
+    const setValueHandler = (value, questionNumber, ncSeverity, id, option) => {
+        surveyContext.setValueHandler(
+            surveyContext.jobInfo,
+            location,
+            questionNumber,
+            ncSeverity,
+            value,
+            id,
+            option,
+        );
     };
+
+    // console.log(location);
 
     // console.info(JSON.stringify(surveyContext.surveyData));
 
@@ -77,14 +92,14 @@ function SurveyQuestions({ questionSet }) {
                         style={styles.dropdown}
                         placeholder="Select"
                         onChange={(value) => {
-                            setValueHandler(value.value, item.id, "result");
+                            setValueHandler(
+                                value.value,
+                                item.question_number,
+                                item.nc_severity,
+                                item.id,
+                                "result",
+                            );
                         }}
-                        // onFocus={() => {
-                        //     handleOpen(
-                        //         item.na_allowed,
-                        //         item.unable_to_validate_allowed,
-                        //     );
-                        // }}
                     />
                 </View>
                 <View style={styles.row}>
@@ -94,12 +109,25 @@ function SurveyQuestions({ questionSet }) {
                         value={testResult?.comment || null}
                         autoFocus={false}
                         onChangeText={(value) =>
-                            setValueHandler(value, item.id, "comment")
+                            setValueHandler(
+                                value,
+                                item.question_number,
+                                item.nc_severity,
+                                item.id,
+                                "comment",
+                            )
                         }
                     />
                 </View>
                 <View style={styles.row}>
-                    <ImageCapture questionId={item.id} />
+                    {testResult?.result && (
+                        <ImageCapture
+                            questionId={item.id}
+                            questionNumber={item.question_number}
+                            location={location}
+                            ncSeverity={item.nc_severity}
+                        />
+                    )}
                 </View>
             </View>
         );

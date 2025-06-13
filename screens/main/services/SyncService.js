@@ -1,7 +1,8 @@
 import axiosInstance from '../../../util/axiosInstance';
-import { deleteDataFromDB, fetchDataFromDB } from '../../../util/database';
+import { deleteDataFromDB, fetchDataFromDB, insertOrUpdateData } from '../../../util/database';
 import { deleteLogs, getLogs } from '../../../util/db/tempSyncLogs';
 import eventbus from '../../../events/eventbus';
+import { getUnsyncedCompletedJobPhotos, updateCompletedJobPhotoStatus } from '../../../util/db/completedJobPhotos';
 
 let isSyncing = false;
 
@@ -11,9 +12,12 @@ export const syncToServer = async () => {
 
     const logsQuery = getLogs();
     const deleteLogsQuery = deleteLogs();
+    const getUnsyncedCompletedJobPhotosQuery = getUnsyncedCompletedJobPhotos();
+    const updateCompletedJobPhotoStatusQuery = updateCompletedJobPhotoStatus();
 
     try {
         const result = await fetchDataFromDB(logsQuery);
+        const unsyncPhotos = await fetchDataFromDB(getUnsyncedCompletedJobPhotosQuery);
         console.log('Syncing logs...');
 
         for (const log of result) {
@@ -26,6 +30,32 @@ export const syncToServer = async () => {
                 console.log(`Deleted log with ID: ${id}`);
             } catch (error) {
                 console.error('Error processing log:', error.response?.data.message || error.message);
+            }
+        }
+
+        for (const photo of unsyncPhotos) {
+            const { id, file_path, filename } = photo;
+
+            console.log(id);
+
+            try {
+                const formData = new FormData();
+                formData.append('photo', {
+                    uri: file_path,
+                    name: filename,
+                    type: 'image/jpeg',
+                });
+
+                await axiosInstance.post("/api/upload-completed-job-photo", formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                await insertOrUpdateData(updateCompletedJobPhotoStatusQuery, [1, id]);
+                console.log(`Updated completed job photo with ID: ${id}`);
+            } catch (error) {
+                console.error('Error processing completed job photo:', error.response?.data.message || error.message);
             }
         }
 

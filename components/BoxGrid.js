@@ -1,10 +1,44 @@
-import React from "react";
-import { View, StyleSheet, Pressable, ImageBackground } from "react-native";
+import {
+    View,
+    StyleSheet,
+    Pressable,
+    ImageBackground,
+    Dimensions,
+    useWindowDimensions,
+} from "react-native";
 import Colors from "../constants/Colors";
 
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
+
 function BoxGrid({ image, onPress, children }) {
+    const { width, height } = useWindowDimensions();
+
+    // Simple breakpoints for width and height
+    const getBoxWidth = () => {
+        if (width > 1000) return width * 0.4;
+        if (width > 800) return width * 0.35;
+        return width * 0.42;
+    };
+
+    const getBoxHeight = () => {
+        if (height > 1000) return height * 0.23;
+        return height * 0.2;
+    };
+
+    const getContainerPadding = () => {
+        if (width > 1000) return width * 0.05;
+        if (width > 800) return width * 0.18;
+        return 70;
+    };
+
     return (
-        <View style={styles.gridItem}>
+        <View
+            style={[
+                styles.gridItem,
+                { width: getBoxWidth(), height: getBoxHeight() },
+            ]}
+        >
             <Pressable
                 android_ripple={{ color: Colors.ripple }}
                 onPress={onPress}
@@ -14,14 +48,19 @@ function BoxGrid({ image, onPress, children }) {
                         : styles.button
                 }
             >
-                <View style={styles.innerContainer}>
+                <View
+                    style={[
+                        styles.innerContainer,
+                        { paddingTop: getContainerPadding() },
+                    ]}
+                >
                     {image && (
                         <ImageBackground
                             source={image}
                             style={styles.imageBackground}
                         />
                     )}
-                    <View>{children}</View>
+                    <View style={styles.textContainer}>{children}</View>
                 </View>
             </Pressable>
         </View>
@@ -37,8 +76,6 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 8,
         backgroundColor: Colors.white,
-        height: 170,
-        width: 180,
         margin: 8,
     },
     button: {
@@ -51,18 +88,21 @@ const styles = StyleSheet.create({
     innerContainer: {
         flex: 1,
         overflow: "hidden",
-        alignSelf: "left",
         paddingLeft: 16,
-        paddingTop: 70,
+        justifyContent: "center",
+        position: "relative", // <--- ADD THIS
     },
     imageBackground: {
-        flex: 1,
         position: "absolute",
-        width: 110,
-        height: 110,
+        width: windowWidth * 0.18,
+        height: windowHeight * 0.13,
         opacity: 0.1,
-        top: -15,
-        right: -15,
+        top: -10,
+        right: -10,
+        resizeMode: "contain",
+    },
+    textContainer: {
+        flex: 1,
     },
 });
 

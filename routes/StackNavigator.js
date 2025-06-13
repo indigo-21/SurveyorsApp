@@ -18,119 +18,131 @@ import LoginScreen from "../screens/login-screens/LoginScreen";
 import QRCodeScannerScreen from "../screens/login-screens/QRCodeScannerScreen";
 import QRCodeScreen from "../screens/login-screens/QRCodeScreen";
 import SummaryScreen from "../screens/main/SummaryScreen";
+import SurveyResultScreen from "../screens/main/SurveyResultScreen";
+import CalendarScreen from "../screens/main/CalendarScreen";
 
 const Stack = createNativeStackNavigator();
 
 function AuthStack() {
     return (
-        <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{
-                    headerShown: false,
-                }}
-            >
-                <Stack.Screen
-                    name="QRCode"
-                    component={QRCodeScreen}
-                />
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen
+                name="QRCode"
+                component={QRCodeScreen}
+            />
 
-                <Stack.Screen
-                    name="QRCodeScanner"
-                    component={QRCodeScannerScreen}
-                />
+            <Stack.Screen
+                name="QRCodeScanner"
+                component={QRCodeScannerScreen}
+            />
 
-                <Stack.Screen name="LoginScreen" component={LoginScreen} />
-            </Stack.Navigator>
-        </NavigationContainer>
+            <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        </Stack.Navigator>
     );
 }
 
 function AuthenticatedStack() {
     return (
-        <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{
+        <Stack.Navigator
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: Colors.primary,
+                },
+                headerTintColor: Colors.white,
+            }}
+        >
+            <Stack.Screen
+                name="OTPVerification"
+                component={OTPVerificationScreen}
+            />
+            <Stack.Screen
+                name="Dashboard"
+                component={DashboardScreen}
+                options={{
+                    headerBackVisible: false,
+                    gestureEnabled: false,
+                    headerTitle: () => (
+                        <Image
+                            source={require("../assets/images/AgilityEco_WhiteLogo.png")}
+                            style={{
+                                width: 120,
+                                height: 70,
+                                resizeMode: "contain",
+                                alignSelf: "center",
+                            }}
+                        />
+                    ),
                     headerStyle: {
                         backgroundColor: Colors.primary,
                     },
-                    headerTintColor: Colors.white,
                 }}
-            >
-                <Stack.Screen
-                    name="OTPVerification"
-                    component={OTPVerificationScreen}
-                />
-                <Stack.Screen
-                    name="Dashboard"
-                    component={DashboardScreen}
-                    options={{
-                        headerBackVisible: false,
-                        gestureEnabled: false,
-                        headerTitle: () => (
-                            <Image
-                                source={require("../assets/images/AgilityEco_WhiteLogo.png")}
-                                style={{
-                                    width: 120,
-                                    height: 70,
-                                    resizeMode: "contain",
-                                    alignSelf: "center",
-                                }}
-                            />
-                        ),
-                        headerStyle: {
-                            backgroundColor: Colors.primary,
-                        },
-                    }}
-                />
-                <Stack.Screen
-                    name="CurrentVisits"
-                    component={CurrentVisitScreen}
-                />
-                <Stack.Screen
-                    name="UpdateJob"
-                    component={UpdateJobScreen}
-                />
-                <Stack.Screen
-                    name="JobDetails"
-                    component={JobDetailsScreen}
-                />
-                <Stack.Screen
-                    name="QuestionSets"
-                    component={QuestionSetScreen}
-                />
+            />
+            <Stack.Screen
+                name="CurrentVisits"
+                component={CurrentVisitScreen}
+            />
+            <Stack.Screen
+                name="UpdateJob"
+                component={UpdateJobScreen}
+            />
+            <Stack.Screen
+                name="JobDetails"
+                component={JobDetailsScreen}
+            />
+            <Stack.Screen
+                name="QuestionSets"
+                component={QuestionSetScreen}
+            />
 
-                <Stack.Screen
-                    name="BookJobs"
-                    component={BookJobScreen}
-                />
+            <Stack.Screen
+                name="BookJobs"
+                component={BookJobScreen}
+            />
 
-                <Stack.Screen
-                    name="CompletedVisits"
-                    component={CompletedVisitScreen}
-                />
+            <Stack.Screen
+                name="CompletedVisits"
+                component={CompletedVisitScreen}
+            />
 
-                <Stack.Screen
-                    name="Survey"
-                    component={SurveyScreen}
-                />
+            <Stack.Screen
+                name="Survey"
+                component={SurveyScreen}
+            />
 
-                <Stack.Screen
-                    name="Summary"
-                    component={SummaryScreen}
-                />
-            </Stack.Navigator>
-        </NavigationContainer>
+            <Stack.Screen
+                name="Summary"
+                component={SummaryScreen}
+            />
+
+            <Stack.Screen
+                name="SurveyResult"
+                component={SurveyResultScreen}
+            />
+
+            <Stack.Screen
+                name="Calendar"
+                component={CalendarScreen}
+            />
+        </Stack.Navigator>
     );
 }
 
 function StackNavigator() {
     const authContext = useContext(AuthContext);
 
-    if (authContext.isAuthenticated) {
-        return <AuthenticatedStack />;
+    if (authContext.isInitializing) {
+        return null; // Or a loading indicator
     }
 
-    return <AuthStack />;
+    return (
+        <NavigationContainer>
+            {authContext.isAuthenticated ? <AuthenticatedStack /> : <AuthStack />}
+        </NavigationContainer>
+    );
 }
 
 export default StackNavigator;

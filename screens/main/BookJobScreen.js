@@ -130,7 +130,7 @@ function BookJobScreen() {
             <View style={styles.container}>
                 <FlatList
                     showsVerticalScrollIndicator={false}
-                    data={unbookedJobs}
+                    data={[...unbookedJobs].reverse()}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <JobList onPress={() => navigationPressHandler({ jobNumber: item.group_id, jobID: item.id })}>
@@ -138,7 +138,6 @@ function BookJobScreen() {
                                 style={{
                                     flexDirection: "row",
                                     width: "100%",
-                                    height: 80,
                                     alignItems: "center",
                                 }}
                             >

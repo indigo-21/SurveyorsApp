@@ -4,15 +4,17 @@ import { createContext, useEffect, useState } from "react";
 export const AuthContext = createContext({
     token: '',
     isAuthenticated: false,
+    isInitializing: true,
     authenticate: (token, propertyInspectorData) => { },
     logout: () => { },
     propertyInspector: '',
-    updatePropertyInspector: (propertyInspectorData) => { },
+    updatePropertyInspector: (otp, otp_verified_at) => { },
 });
 
 function AuthContextProvider({ children }) {
     const [authToken, setAuthToken] = useState(null);
     const [propertyInspector, setPropertyInspector] = useState({});
+    const [isInitializing, setIsInitializing] = useState(true);
 
     useEffect(() => {
         const loadToken = async () => {
@@ -20,11 +22,13 @@ function AuthContextProvider({ children }) {
                 const token = await AsyncStorage.getItem('authToken');
                 const propertyInspectorData = await AsyncStorage.getItem('piData');
                 if (token && propertyInspectorData) {
-                    setAuthToken(token); // or your auth context shape
+                    setAuthToken(token);
                     setPropertyInspector(JSON.parse(propertyInspectorData));
                 }
             } catch (e) {
                 console.error('Failed to load token:', e);
+            } finally {
+                setIsInitializing(false); // done loading
             }
         };
 
@@ -43,18 +47,20 @@ function AuthContextProvider({ children }) {
         }
     };
 
-    const updatePropertyInspector = async (updater) => {
-        try {
-            setPropertyInspector((prev) => {
-                const updated =
-                    typeof updater === "function" ? updater(prev) : updater;
-
-                AsyncStorage.setItem("piData", JSON.stringify(updated));
-                return updated;
-            });
-        } catch (e) {
-            console.error("Failed to update property inspector:", e);
-        }
+    const updatePropertyInspector = async (otp, otp_verified_at) => {
+        setPropertyInspector(prev => {
+            const updated = {
+                ...prev,
+                user: {
+                    ...prev.user,
+                    otp,
+                    otp_verified_at,
+                },
+            };
+            // Save to AsyncStorage outside of setState to avoid side effects in render
+            AsyncStorage.setItem('piData', JSON.stringify(updated));
+            return updated;
+        });
     };
 
     const logout = async () => {
@@ -72,6 +78,7 @@ function AuthContextProvider({ children }) {
     const value = {
         token: authToken,
         isAuthenticated: !!authToken,
+        isInitializing,
         authenticate: authenticate,
         logout: logout,
         propertyInspector: propertyInspector,

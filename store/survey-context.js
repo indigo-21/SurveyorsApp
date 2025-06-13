@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useEffect, useState } from "react";
+import { format } from 'date-fns';
 
 export const SurveyContext = createContext({
     jobInfo: {
@@ -14,11 +15,11 @@ export const SurveyContext = createContext({
         surveyType: 1,
         measureCat: "",
         umr: "",
-        surveys: [],
     },
     surveyData: [],
     storeJobInfo: (data) => { },
-    setValueHandler: (surveyData, value, id, option) => { },
+    setValueHandler: (surveyData, location, questionNumber, ncSeverity, value, id, option) => { },
+    removeJobSurveyData: (jobNumber, umr) => { },
 });
 
 function SurveyContextProvider({ children }) {
@@ -27,13 +28,14 @@ function SurveyContextProvider({ children }) {
 
     useEffect(() => {
         const loadStoredSurveyData = async () => {
+            // await AsyncStorage.removeItem("surveyData");
+
             try {
                 const storedData = await AsyncStorage.getItem("surveyData");
                 if (storedData !== null) {
                     setSurveyData(JSON.parse(storedData));
                 }
 
-                // await AsyncStorage.removeItem("surveyData");
             } catch (e) {
                 console.error("Failed to load survey data", e);
             }
@@ -43,6 +45,8 @@ function SurveyContextProvider({ children }) {
 
     useEffect(() => {
         const saveSurveyData = async () => {
+            // await AsyncStorage.removeItem("surveyData");
+
             try {
                 await AsyncStorage.setItem("surveyData", JSON.stringify(surveyData));
             } catch (e) {
@@ -59,7 +63,10 @@ function SurveyContextProvider({ children }) {
         }));
     };
 
-    function setValueHandler(surveyData, value, id, option) {
+    // console.info(JSON.stringify(surveyData));
+
+
+    function setValueHandler(surveyData, location, questionNumber, ncSeverity, value, id, option) {
         const { jobNumber, umr, surveyType, surveyQuestionSetId } = surveyData;
 
         setSurveyData((prev) => {
@@ -75,6 +82,11 @@ function SurveyContextProvider({ children }) {
                         (r) => r.questionId === id && r.surveyType === surveyType
                     ) || {
                         questionId: id,
+                        jobId: jobInfo.jobId || 0,
+                        time: format(new Date(), 'HH:mm'),
+                        geostamp: location,
+                        questionNumber,
+                        ncSeverity,
                         surveyType,
                         result: "",
                         comment: "",
@@ -112,6 +124,11 @@ function SurveyContextProvider({ children }) {
                         testResult: [
                             {
                                 questionId: id,
+                                jobId: jobInfo.jobId || 0,
+                                time: format(new Date(), 'HH:mm'),
+                                geostamp: location,
+                                questionNumber,
+                                ncSeverity,
                                 surveyType,
                                 result: option === "result" ? value : "",
                                 comment: option === "comment" ? value : "",
@@ -122,6 +139,11 @@ function SurveyContextProvider({ children }) {
                 ];
             }
         });
+
+    }
+
+    function removeJobSurveyData(jobNumber, umr) {
+        setSurveyData((prev) => prev.filter((job) => job.umr !== umr && job.jobNumber !== jobNumber));
     }
 
 
@@ -129,6 +151,7 @@ function SurveyContextProvider({ children }) {
         jobInfo: jobInfo,
         storeJobInfo: storeJobInfo,
         setValueHandler: setValueHandler,
+        removeJobSurveyData: removeJobSurveyData,
         surveyData: surveyData,
     };
 

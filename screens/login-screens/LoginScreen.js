@@ -1,5 +1,6 @@
 import {
     Alert,
+    Dimensions,
     Image,
     ImageBackground,
     KeyboardAvoidingView,
@@ -17,6 +18,9 @@ import Colors from "../../constants/Colors";
 import CustomButton from "../../components/CustomButton";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 function LoginScreen() {
     const [isAuthenticating, setIsAuthenticating] = useState(false);
     const [enteredEmail, setEnteredEmail] = useState("");
@@ -33,15 +37,16 @@ function LoginScreen() {
             );
             const token = propertyInspectorData.token;
             const propertyInspector = propertyInspectorData;
-
             authContext.authenticate(token, propertyInspector);
         } catch (error) {
             Alert.alert(
                 "Login Failed",
                 error.response?.data.message ||
-                    error.message ||
-                    "Could not log you in, please check your credentials",
+                error.message ||
+                "Could not log you in, please check your credentials",
             );
+            setEnteredEmail("");
+            setEnteredPassword("");
             setIsAuthenticating(false);
             return;
         }
@@ -72,12 +77,12 @@ function LoginScreen() {
                                     flexDirection: "row",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    
+
                                 }}
                             >
                                 <Image
                                     source={require("../../assets/images/agility_logo_login.png")}
-                                    style={{width: "80%", height: 130}}
+                                    style={styles.logo}
                                 />
                             </View>
                             <Text style={styles.loginText}>
@@ -117,10 +122,7 @@ function LoginScreen() {
 
                         <Image
                             source={require("../../assets/images/login_screen3.png")}
-                            style={{
-                                width: "100%",
-                                height: 200, // Consider using fixed height instead of "30%" for better control
-                            }}
+                            style={styles.imageBottom}
                         />
                     </View>
                 </ScrollView>
@@ -139,12 +141,13 @@ const styles = StyleSheet.create({
         flexDirection: "column",
     },
     logo: {
-        width: 100,
-        height: 100,
-        marginBottom: 20,
+        width: windowWidth * 0.5,
+        height: windowHeight * 0.12,
+        marginBottom: windowWidth * 0.02,
+        resizeMode: "contain",
     },
     input: {
-        width: "80%",
+        width: windowWidth * 0.85,
         padding: 10,
         marginBottom: 10,
         borderWidth: 1,
@@ -162,8 +165,15 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         marginTop: 16,
-        width: "85%", // Ensures the container spans the full width
+        width: "85%",
+        width: windowWidth * 0.85,
+
     },
+    imageBottom: {
+        width: "100%",
+        height: windowHeight * 0.3,
+        resizeMode: "contain",
+    }
 });
 
 export default LoginScreen;

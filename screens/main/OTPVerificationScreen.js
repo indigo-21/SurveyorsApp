@@ -4,6 +4,7 @@ import { AuthContext } from "../../store/auth-context";
 import { logout, sendSMS, verifyOTP } from "../../util/auth";
 import {
     Alert,
+    Dimensions,
     Image,
     ImageBackground,
     KeyboardAvoidingView,
@@ -18,6 +19,9 @@ import {
 import LoadingOverlay from "../../components/LoadingOverlay";
 import CustomButton from "../../components/CustomButton";
 import Colors from "../../constants/Colors";
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 function OTPVerificationScreen() {
     const navigation = useNavigation();
@@ -54,8 +58,8 @@ function OTPVerificationScreen() {
     useEffect(() => {
         setIsLoading(true);
         if (
-            parsePropertyInspector.user.otp != null &&
-            parsePropertyInspector.user.otp_verified_at != null
+            parsePropertyInspector.user?.otp != null &&
+            parsePropertyInspector.user?.otp_verified_at != null
         ) {
             navigation.reset({
                 index: 0,
@@ -63,10 +67,12 @@ function OTPVerificationScreen() {
             });
         } else {
             sendSMSFunction();
-
             setIsLoading(false);
         }
-    }, [parsePropertyInspector]);
+    }, [
+        parsePropertyInspector.user?.otp,
+        parsePropertyInspector.user?.otp_verified_at
+    ]);
 
     useEffect(() => {
         let timer;
@@ -123,14 +129,7 @@ function OTPVerificationScreen() {
         try {
             const response = await verifyOTP(piID, enteredOtp);
 
-            authContext.updatePropertyInspector((prev) => ({
-                ...prev,
-                user: {
-                    ...prev.user,
-                    otp: response.otp,
-                    otp_verified_at: response.otp_verified_at,
-                },
-            }));
+            authContext.updatePropertyInspector(response.otp, response.otp_verified_at);
 
             navigation.reset({
                 index: 0,
@@ -166,10 +165,19 @@ function OTPVerificationScreen() {
                         contentContainerStyle={{ flexGrow: 1 }}
                         keyboardShouldPersistTaps="handled">
                         <View style={styles.container}>
-                            <Image
-                                source={require("../../assets/images/agility_logo_login.png")}
-                                style={styles.image}
-                            />
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+
+                                }}
+                            >
+                                <Image
+                                    source={require("../../assets/images/agility_logo_login.png")}
+                                    style={styles.logo}
+                                />
+                            </View>
 
                             <Text style={styles.title}>OTP Verification</Text>
                             <Text style={styles.text}>
@@ -238,22 +246,22 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         color: "#000",
-        paddingTop: 20,
     },
     text: {
         fontSize: 14,
         color: "#000",
         textAlign: "center",
-        paddingHorizontal: 40,
+        paddingHorizontal: windowWidth * 0.1,
         marginTop: 10,
-        marginBottom: 20,
+        marginBottom: windowHeight * 0.03,
         fontStyle: "italic",
         color: Colors.primary,
     },
-    image: {
-        width: "50%",
-        height: 100,
-        marginBottom: 20,
+    logo: {
+        width: windowWidth * 0.5,
+        height: windowHeight * 0.12,
+        marginBottom: windowWidth * 0.02,
+        resizeMode: "contain",
     },
     smallText: {
         fontSize: 12,
@@ -271,7 +279,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     input: {
-        width: "80%",
+        width: windowWidth * 0.85,
         padding: 10,
         marginBottom: 10,
         borderWidth: 1,
@@ -282,7 +290,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         marginTop: 16,
-        width: "85%", // Ensures the container spans the full width
+        width: windowWidth * 0.85,
     },
 });
 

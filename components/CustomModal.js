@@ -22,7 +22,7 @@ function CustomModal({ setModalVisible, modalVisible, title, subtitle, children 
                     </Pressable>
                 </View>
             </View>
-        </Modal>
+        </Modal >
     );
 }
 

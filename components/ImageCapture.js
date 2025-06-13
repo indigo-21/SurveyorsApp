@@ -13,7 +13,7 @@ import IconButton from "./IconButton";
 import { SurveyContext } from "../store/survey-context";
 import CustomButton from "./CustomButton";
 
-function ImageCapture({ questionId }) {
+function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
     const [previewVisible, setPreviewVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [imageUri, setImageUri] = useState([]);
@@ -48,6 +48,9 @@ function ImageCapture({ questionId }) {
             // Immediately update context after taking image
             surveyContext.setValueHandler(
                 surveyContext.jobInfo,
+                location,
+                questionNumber,
+                ncSeverity,
                 newImageArray,
                 questionId,
                 "images",
@@ -67,6 +70,9 @@ function ImageCapture({ questionId }) {
         // Immediately update context after deleting image
         surveyContext.setValueHandler(
             surveyContext.jobInfo,
+            location,
+            questionNumber,
+            ncSeverity,
             removedImage,
             questionId,
             "images",

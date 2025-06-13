@@ -1,22 +1,33 @@
 import { useContext, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useIsFocused, useRoute } from "@react-navigation/native";
+import {
+    useIsFocused,
+    useNavigation,
+    useRoute,
+} from "@react-navigation/native";
+import { addDays, addHours, format } from "date-fns";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 
 import ScreenWrapper from "../../components/ScreenWrapper";
 import ScreenTitle from "../../components/ScreenTitle";
 import CustomButton from "../../components/CustomButton";
 import Colors from "../../constants/Colors";
-import { getJobSummary } from "../../util/db/jobs";
-import { fetchDataFromDB } from "../../util/database";
+import { getJobSummary, updateCompletedJobs } from "../../util/db/jobs";
+import { fetchDataFromDB, fetchFirstDataFromDB, insertOrUpdateData } from "../../util/database";
 import { SurveyContext } from "../../store/survey-context";
 import { getAllSurveyQuestions } from "../../util/db/surveyQuestions";
+import { storeCompletedJob } from "../../util/db/completedJobs";
+import { storeCompletedJobPhoto } from "../../util/db/completedJobPhotos";
+import { getClientReinspectRemediation } from "../../util/db/clients";
 
 function SummaryScreen() {
     const route = useRoute();
+    const navigation = useNavigation();
+    const isFocused = useIsFocused();
+    const surveyContext = useContext(SurveyContext);
     const { jobNumber } = route.params || {};
     const [jobSummary, setJobSummary] = useState({});
-    const surveyContext = useContext(SurveyContext);
-    const isFocused = useIsFocused();
     const [allJobsComplete, setAllJobsComplete] = useState(false);
 
     useEffect(() => {
@@ -63,10 +74,148 @@ function SummaryScreen() {
     }, [isFocused]);
 
     const submitSurveyHandler = () => {
-        console.log("submit");
+
+        const storeCompletedJobsQuery = storeCompletedJob();
+        const storeCompletedJobPhotoQuery = storeCompletedJobPhoto();
+        const updateCompletedJobsQuery = updateCompletedJobs();
+        const getClientReinspectRemediationQuery = getClientReinspectRemediation();
+        const now = new Date(); // Declare now
+        const dateToday = format(now, "yyyy-MM-dd HH:mm:ss");
+
+        const specificJob = surveyContext.surveyData.filter(
+            (job) => job.jobNumber === jobNumber,
+        );
+
+        // Loop through each job in specificJob and prepare data for completed jobs
+
+        specificJob.forEach(async (job) => {
+            // Prepare completed jobs data
+            job.testResult.forEach(async (result) => {
+                const completedJobsUuid = uuidv4();
+                const completedJobsParams = [
+                    completedJobsUuid,
+                    result.jobId,
+                    result.time,
+                    result.geostamp,
+                    result.result,
+                    result.comment,
+                    0,
+                    0,
+                    job.surveyQuestionSetId,
+                    result.questionId,
+                    null,
+                    null,
+                    dateToday,
+                    dateToday
+                ];
+
+                try {
+                    // Insert or update completed job data
+                    await insertOrUpdateData(
+                        storeCompletedJobsQuery,
+                        completedJobsParams,
+                    );
+
+                    if (result.images.length !== 0) {
+                        result.images.forEach(async (image) => {
+                            const completedJobPhotosUuid = uuidv4();
+
+                            const completedJobPhotoParams = [
+                                completedJobPhotosUuid,
+                                completedJobsUuid,
+                                image.fileName,
+                                image.uri,
+                                0,
+                                dateToday,
+                                dateToday,
+                                null,
+                            ];
+
+                            // Insert or update completed job photo data
+                            await insertOrUpdateData(
+                                storeCompletedJobPhotoQuery,
+                                completedJobPhotoParams,
+                            );
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error preparing completed job data:", error);
+                }
+            });
+
+
+            const getSurveyResult = job.testResult.filter(
+                (result) => result.result === "Non-Compliant",
+            );
+            const getJobId = job.testResult.find(
+                (result) => result.jobId,
+            ).jobId;
+
+            let jobRemediationType = "";
+            let jobStatus = 3;
+            let reinspectRemediation = dateToday;
+
+            if (getSurveyResult.length !== 0) {
+                const clientRemediationDuration = await fetchFirstDataFromDB(
+                    getClientReinspectRemediationQuery,
+                    getJobId,
+                );
+
+                const getCat1 = getSurveyResult.find(
+                    (result) => result.ncSeverity === "Cat1"
+                );
+
+                jobRemediationType = "NC";
+                jobStatus = 16;
+
+                let remediationTime, durationUnit;
+
+                if (getCat1) {
+                    jobRemediationType = "Cat1";
+                    remediationTime = clientRemediationDuration.cat1_reinspect_remediation;
+                    durationUnit = clientRemediationDuration.cat1_reinspect_remediation_duration_unit;
+                } else {
+                    remediationTime = clientRemediationDuration.nc_reinspect_remediation;
+                    durationUnit = clientRemediationDuration.nc_reinspect_remediation_duration_unit;
+                }
+
+                let adjustedDate;
+                if (durationUnit === 1) {
+                    adjustedDate = addHours(now, Number(remediationTime));
+                } else {
+                    adjustedDate = addDays(now, Number(remediationTime));
+                }
+
+
+                reinspectRemediation = format(adjustedDate, "yyyy-MM-dd HH:mm:ss");
+            }
+
+            const updateCompletedJobsParams = [
+                jobStatus,
+                dateToday,
+                jobRemediationType,
+                reinspectRemediation,
+                getJobId,
+            ];
+
+            // Update job data
+            try {
+                await insertOrUpdateData(
+                    updateCompletedJobsQuery,
+                    updateCompletedJobsParams,
+                );
+            } catch (error) {
+                console.error("Error updating completed jobs:", error);
+            }
+
+            surveyContext.removeJobSurveyData(job.jobNumber, job.umr);
+
+            navigation.navigate("Dashboard");
+        });
+
+        // console.log("submit");
     };
 
-    // console.info(JSON.stringify(surveyContext));
     return (
         <ScreenWrapper>
             <ScreenTitle title="Summary of Survey" />
@@ -165,12 +314,10 @@ function SummaryScreen() {
                                             </Text>
                                             <Text style={styles.text}>
                                                 (
-                                                {`${
-                                                    jobStoredData?.testResult
-                                                        ?.length || 0
-                                                } of ${
-                                                    job.questionsCount
-                                                }, ${averageScore}%`}
+                                                {`${jobStoredData?.testResult
+                                                    ?.length || 0
+                                                    } of ${job.questionsCount
+                                                    }, ${averageScore}%`}
                                                 )
                                             </Text>
                                         </View>
@@ -190,11 +337,11 @@ function SummaryScreen() {
                         importedStyles={[
                             allJobsComplete
                                 ? {
-                                      backgroundColor: Colors.primary,
-                                  }
+                                    backgroundColor: Colors.primary,
+                                }
                                 : {
-                                      backgroundColor: Colors.cancel,
-                                  },
+                                    backgroundColor: Colors.cancel,
+                                },
                             {
                                 color: Colors.white,
                                 marginTop: 16,

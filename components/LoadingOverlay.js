@@ -1,8 +1,24 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 function LoadingOverlay({ message }) {
     return (
         <View style={styles.rootContainer}>
+            <View
+                style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                }}
+            >
+                <Image
+                    source={require("../assets/images/agility_logo_login.png")}
+                    style={styles.logo}
+                />
+            </View>
             <Text style={styles.message}>{message}</Text>
             <ActivityIndicator size="large" />
         </View>
@@ -21,5 +37,11 @@ const styles = StyleSheet.create({
     message: {
         fontSize: 16,
         marginBottom: 12,
+    },
+    logo: {
+        width: windowWidth * 0.5,
+        height: windowHeight * 0.12,
+        marginBottom: windowWidth * 0.02,
+        resizeMode: "contain",
     },
 });

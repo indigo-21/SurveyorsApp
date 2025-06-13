@@ -12,3 +12,7 @@ const jobStatusesProps = `
 `;
 
 export const jobStatusesTable = createTableSQL('job_statuses', jobStatusesProps);
+
+export const getAllJobStatuses = () => {
+    return `SELECT * FROM job_statuses`;
+}

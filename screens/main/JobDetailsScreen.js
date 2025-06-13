@@ -51,8 +51,6 @@ function JobDetailsScreen() {
         }
     }, [isFocused, jobID]);
 
-    // console.log("Job Data:", jobData);
-
     return (
         <ScreenWrapper>
             <ScreenTitle title={`Job Details: ${jobNumber}`} />
@@ -128,7 +126,7 @@ function JobDetailsScreen() {
 
                 <JobDetailsBox title="Job Measures">
                     {jobData.jobMeasure.map((measure) => (
-                        <View key={measure.id} >
+                        <View key={measure.job_id} >
                             <View style={styles.content}>
                                 <Text style={styles.textColumn}>Job Number</Text>
                                 <Text style={styles.text}>{measure.job_number}</Text>

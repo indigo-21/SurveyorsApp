@@ -8,3 +8,7 @@ const outwardPostcodesProps = `
 `;
 
 export const outwardPostcodesTable = createTableSQL('outward_postcodes', outwardPostcodesProps);
+
+export const getAllOutwardPostcodes = () => {
+    return `SELECT * FROM outward_postcodes`;
+};

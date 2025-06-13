@@ -1,10 +1,12 @@
-import { Image, ImageBackground, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Image, ImageBackground, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import CustomButton from "../../components/CustomButton";
 import Colors from "../../constants/Colors";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingOverlay from "../../components/LoadingOverlay";
+
+const windowWidth = Dimensions.get('window').width;
 
 function QRCodeScreen() {
     const navigation = useNavigation();
@@ -40,6 +42,7 @@ function QRCodeScreen() {
                 <Image
                     source={require("../../assets/images/agility_logo_login.png")}
                     style={styles.image}
+                    resizeMode="contain"
                 />
 
                 <Text style={styles.title}>Welcome!</Text>
@@ -73,19 +76,18 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         color: "#000",
-        paddingTop: 20,
     },
     text: {
         fontSize: 14,
         color: "#000",
         textAlign: "center",
-        paddingHorizontal: 20,
+        paddingHorizontal: windowWidth * 0.1,
         marginTop: 10,
         marginBottom: 20,
     },
     image: {
-        width: "50%",
-        height: 100,
+        width: windowWidth * 0.5,
+        height: 120,
         marginBottom: 20,
     },
     buttonContainer: {

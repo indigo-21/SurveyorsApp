@@ -1,10 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useContext, useState } from "react";
+import { useContext, useState, useLayoutEffect } from "react";
+import { Dropdown } from "react-native-element-dropdown";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useLayoutEffect } from "react";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { format } from "date-fns";
-import DropDownPicker from "react-native-dropdown-picker";
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 import { AuthContext } from "../../store/auth-context";
 import Colors from "../../constants/Colors";
@@ -46,19 +45,25 @@ function UpdateJobScreen() {
     };
 
     const updateJobHandler = async (value) => {
-
         if (value === "4") {
             setIsRebook(true);
         } else {
             setIsRebook(false);
         }
-        // BookingService(value, status, jobNumber, propertyInspector, selectedDate);
 
+        setValue(value);
+        // BookingService(value, status, jobNumber, propertyInspector, selectedDate);
     };
 
     const submitUpdateJobHandler = async () => {
         try {
-            await BookingService(value, status, jobNumber, propertyInspector, selectedDate);
+            await BookingService(
+                value,
+                status,
+                jobNumber,
+                propertyInspector,
+                selectedDate,
+            );
             setTimeout(() => {
                 navigation.goBack();
             }, 300);
@@ -84,57 +89,21 @@ function UpdateJobScreen() {
         <ScreenWrapper>
             <ScreenTitle title={`Update Job: ${jobNumber}`} />
 
-            <DropDownPicker
-                open={open}
-                value={value}
-                items={items}
-                itemKey="value"
-                setOpen={setOpen}
-                setValue={setValue}
-                onChangeValue={(value) => { updateJobHandler(value) }}
-                setItems={setItems}
-                placeholder="Select a Status"
-                style={{
-                    borderColor: "#ccc",
-                    borderRadius: 10,
-                    height: 50,
-                    justifyContent: "center",
-                    backgroundColor: "#fff",
-                    marginTop: 16,
-                }}
-                textStyle={{
-                    textAlign: "center",
-                    fontSize: 16,
-                    color: "#333",
-                }}
-                placeholderStyle={{
-                    textAlign: "center",
-                    color: "gray",
-                    fontWeight: "500",
-                }}
-                dropDownContainerStyle={{
-                    borderColor: "#ccc",
-                    borderRadius: 10,
-                    height: "auto",
-                    marginTop: 8,
-                }}
-                listItemLabelStyle={{
-                    textAlign: "center",
-                    borderBottomColor: "#ccc",
-                    borderBottomWidth: 1,
-                    paddingBottom: 8,
-                }}
-                searchContainerStyle={{
-                    borderBottomWidth: 0,
-                }}
-                listItemContainerStyle={{
-                    height: 40,
-                    justifyContent: "center",
-                    alignContent: "center",
-                }}
-            />
-
-            {isRebook &&
+            <View style={styles.dropdownContainer}>
+                <Text style={styles.dropdownText}>Job Status:</Text>
+                <Dropdown
+                    data={items}
+                    labelField="label"
+                    valueField="value"
+                    value={value}
+                    style={styles.dropdown}
+                    placeholder="Select"
+                    onChange={(value) => {
+                        updateJobHandler(value.value);
+                    }}
+                />
+            </View>
+            {isRebook && (
                 <>
                     <View style={styles.container}>
                         <View style={styles.content}>
@@ -149,8 +118,21 @@ function UpdateJobScreen() {
                             />
                         </View>
 
-                        <Text style={[{ backgroundColor: Colors.white, margin: 16, padding: 8, borderRadius: 8, textAlign: "center", width: "80%", fontSize: 16, }]}>
-                            Selected: {format(selectedDate, 'yyyy-MM-dd HH:mm:ss')}
+                        <Text
+                            style={[
+                                {
+                                    backgroundColor: Colors.white,
+                                    margin: 16,
+                                    padding: 8,
+                                    borderRadius: 8,
+                                    textAlign: "center",
+                                    width: "80%",
+                                    fontSize: 16,
+                                },
+                            ]}
+                            onPress={showPicker}
+                        >
+                            Selected: {format(selectedDate, "yyyy-MM-dd HH:mm:ss")}
                         </Text>
 
                         <DateTimePickerModal
@@ -160,12 +142,12 @@ function UpdateJobScreen() {
                             onConfirm={handleConfirm}
                             onCancel={hidePicker}
                             is24Hour={false} // Set to true for 24-hour format
-                            themeVariant="light"  // <-- This is critical on iOS
-                            textColor="#000000"   // <-- Makes text visible on white background
+                            themeVariant="light" // <-- This is critical on iOS
+                            textColor="#000000" // <-- Makes text visible on white background
                         />
                     </View>
                 </>
-            }
+            )}
 
             <View style={styles.buttonContainer}>
                 <CustomButton
@@ -185,9 +167,14 @@ function UpdateJobScreen() {
                     onPress={() => submitUpdateJobHandler()}
                 />
             </View>
-            <View style={{ flex: 1, justifyContent: "flex-end", }}>
+            <View style={{ flex: 1, justifyContent: "flex-end" }}>
                 <View style={styles.container}>
-                    <Text style={[styles.text, { fontStyle: "italic", fontSize: 13 }]}>
+                    <Text
+                        style={[
+                            styles.text,
+                            { fontStyle: "italic", fontSize: 13 },
+                        ]}
+                    >
                         Click the button below to view the job details.
                     </Text>
                 </View>
@@ -204,7 +191,7 @@ function UpdateJobScreen() {
                     />
                 </View>
             </View>
-        </ScreenWrapper >
+        </ScreenWrapper>
     );
 }
 
@@ -242,6 +229,28 @@ const styles = StyleSheet.create({
         marginTop: 16,
         justifyContent: "center",
         alignItems: "center",
+    },
+    dropdown: {
+        height: 40,
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        width: "100%",
+        padding: 10,
+    },
+    dropdownContainer: {
+        width: "100%",
+        marginTop: 16,
+        paddingHorizontal: 16,
+        backgroundColor: Colors.white,
+        height: "13%",
+        justifyContent: "center",
+        borderRadius: 8,
+    },
+    dropdownText: {
+        fontSize: 14,
+        marginBottom: 8,
     },
 });
 

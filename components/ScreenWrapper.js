@@ -18,11 +18,10 @@ const styles = StyleSheet.create({
     background: {
         flex: 1,
         width: '100%',
-        height: '100%',
-        objectFit: 'contain',
+        height: '100%'
     },
     container: {
-        margin: 16,
+        padding: 16,
         flex: 1,
     }
 });

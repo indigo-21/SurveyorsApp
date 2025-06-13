@@ -32,6 +32,8 @@ import { bookingsTable } from './db/bookings';
 import { accountLevelsTable } from './db/accountLevels';
 import { userTypesTable } from './db/userTypes';
 import { storeLogs, tempSyncLogsTable } from './db/tempSyncLogs';
+import { completedJobsTable } from './db/completedJobs';
+import { completedJobPhotosTable } from './db/completedJobPhotos';
 
 const tableSchemas = [
     accountLevelsTable,
@@ -64,6 +66,8 @@ const tableSchemas = [
     propertyInspectorJobTypesTable,
     bookingsTable,
     tempSyncLogsTable,
+    completedJobsTable,
+    completedJobPhotosTable,
 ];
 
 let dbInstance = null;
@@ -78,6 +82,7 @@ const getDB = async () => {
 };
 
 export const initializeDB = async () => {
+    // await dropAllTables();
     const db = await getDB();
 
     try {
@@ -86,7 +91,7 @@ export const initializeDB = async () => {
         const tableInit = async () => {
             try {
                 for (const tableSQL of tableSchemas) {
-                    // emptyTable(db, tableSQL[0].table);
+                    emptyTable(db, tableSQL[0].table);
 
                     await db.execAsync(tableSQL[0].sql, []);
                     console.log(`Creatinggggg: ${tableSQL[0].table} created`);
@@ -121,6 +126,7 @@ export const dropAllTables = async () => {
     const db = await getDB();
 
     try {
+
         await db.withTransactionAsync(async () => {
             for (const tableSQL of tableSchemas) {
                 await db.execAsync(`DROP TABLE IF EXISTS ${tableSQL[0].table};`, []);
@@ -218,7 +224,7 @@ export const insertOrUpdateData = async (fetchedQuery, params) => {
     }
 
     const result = await db.runAsync(fetchedQuery, params);
-    return result;
+    return result?.lastInsertRowId ?? null;
 }
 
 const storeTempSyncLog = async (db, query, params) => {

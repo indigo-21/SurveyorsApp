@@ -19,6 +19,7 @@ function DataContextProvider({ children }) {
             currentVisits: data[0].length,
             questionSets: data[1].length,
             bookJobs: data[2].length,
+            completedVisits: data[3].length,
         }));
     }
 

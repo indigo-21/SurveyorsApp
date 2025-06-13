@@ -44,14 +44,13 @@ function SurveyScreen() {
                         measureCat: data[0].measure_cat,
                         umr: data[0].umr,
                     });
-
-                }).catch((error) => {
+                })
+                .catch((error) => {
                     console.error("Error fetching job measures:", error);
                 });
         };
 
         fetchJobMeasures();
-
     }, []);
 
     const changeMeasureHandler = (data) => {
@@ -61,6 +60,8 @@ function SurveyScreen() {
             description: data.description,
             measureCat: data.measure_cat,
             umr: data.umr,
+            jobId: data.job_id,
+            surveyQuestionSetId: data.survey_question_set_id,
         });
     };
 
@@ -89,7 +90,6 @@ function SurveyScreen() {
                 </View>
             </CustomModal>
             <View style={styles.measureContainer}>
-
                 <ScreenTitle title={`Job Number: ${jobNumber}`} size={16} />
 
                 <ScrollView
@@ -105,21 +105,37 @@ function SurveyScreen() {
                     {schemeList.map((item, index) => {
                         return (
                             <ConfigrationGrid
-                                key={item.id}
+                                key={item.job_id}
                                 importedStyles={
-                                    surveyContext.jobInfo.measureId === item.measure_id && surveyContext.jobInfo.umr === item.umr ?
-                                        { backgroundColor: Colors.primary, width: 120 } :
-                                        { width: 120 }
+                                    surveyContext.jobInfo.measureId ===
+                                        item.measure_id &&
+                                    surveyContext.jobInfo.umr === item.umr
+                                        ? {
+                                              backgroundColor: Colors.primary,
+                                              width: 120,
+                                          }
+                                        : { width: 120 }
                                 }
                                 textContent={`(${item.short_name})`}
                                 onPress={() => changeMeasureHandler(item)}
-                                active={surveyContext.jobInfo.measureId === item.measure_id && surveyContext.jobInfo.umr === item.umr}
+                                active={
+                                    surveyContext.jobInfo.measureId ===
+                                        item.measure_id &&
+                                    surveyContext.jobInfo.umr === item.umr
+                                }
                             >
-                                <Text style={
-                                    surveyContext.jobInfo.measureId === item.measure_id && surveyContext.jobInfo.umr === item.umr ?
-                                        [styles.text, { color: Colors.white }] :
-                                        styles.text
-                                }>
+                                <Text
+                                    style={
+                                        surveyContext.jobInfo.measureId ===
+                                            item.measure_id &&
+                                        surveyContext.jobInfo.umr === item.umr
+                                            ? [
+                                                  styles.text,
+                                                  { color: Colors.white },
+                                              ]
+                                            : styles.text
+                                    }
+                                >
                                     {item.measure_cat}
                                 </Text>
                             </ConfigrationGrid>
@@ -128,11 +144,11 @@ function SurveyScreen() {
                     <ConfigrationGrid
                         importedStyles={{ width: 120 }}
                         textContent="Review"
-                        onPress={() => navigation.navigate("Summary", { jobNumber })}
+                        onPress={() =>
+                            navigation.navigate("Summary", { jobNumber })
+                        }
                     >
-                        <Text style={styles.text}>
-                            Summary
-                        </Text>
+                        <Text style={styles.text}>Summary</Text>
                     </ConfigrationGrid>
                 </ScrollView>
                 <View style={styles.measureInfoContainer}>
