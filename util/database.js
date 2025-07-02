@@ -34,6 +34,7 @@ import { userTypesTable } from './db/userTypes';
 import { storeLogs, tempSyncLogsTable } from './db/tempSyncLogs';
 import { completedJobsTable } from './db/completedJobs';
 import { completedJobPhotosTable } from './db/completedJobPhotos';
+import { queuedSmstable } from './db/queuedSms';
 
 const tableSchemas = [
     accountLevelsTable,
@@ -68,6 +69,7 @@ const tableSchemas = [
     tempSyncLogsTable,
     completedJobsTable,
     completedJobPhotosTable,
+    queuedSmstable,
 ];
 
 let dbInstance = null;
@@ -91,8 +93,7 @@ export const initializeDB = async () => {
         const tableInit = async () => {
             try {
                 for (const tableSQL of tableSchemas) {
-                    emptyTable(db, tableSQL[0].table);
-
+                    // Create table first (with IF NOT EXISTS to avoid errors)
                     await db.execAsync(tableSQL[0].sql, []);
                     console.log(`Creatinggggg: ${tableSQL[0].table} created`);
 
@@ -140,8 +141,18 @@ export const dropAllTables = async () => {
 
 const emptyTable = async (db, table) => {
     try {
-        await db.execAsync(`DELETE FROM ${table};`, []);
-        console.log(`Table ${table} emptied`);
+        // Check if table exists first
+        const result = await db.getFirstAsync(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?;",
+            [table]
+        );
+        
+        if (result) {
+            await db.execAsync(`DELETE FROM ${table};`, []);
+            console.log(`Table ${table} emptied`);
+        } else {
+            console.log(`Table ${table} does not exist, skipping empty operation`);
+        }
     }
     catch (error) {
         console.error(`Error emptying table ${table}:`, error);

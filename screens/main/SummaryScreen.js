@@ -20,6 +20,8 @@ import { getAllSurveyQuestions } from "../../util/db/surveyQuestions";
 import { storeCompletedJob } from "../../util/db/completedJobs";
 import { storeCompletedJobPhoto } from "../../util/db/completedJobPhotos";
 import { getClientReinspectRemediation } from "../../util/db/clients";
+import { storeLogs } from "../../util/db/queuedSms";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 function SummaryScreen() {
     const route = useRoute();
@@ -79,6 +81,7 @@ function SummaryScreen() {
         const storeCompletedJobPhotoQuery = storeCompletedJobPhoto();
         const updateCompletedJobsQuery = updateCompletedJobs();
         const getClientReinspectRemediationQuery = getClientReinspectRemediation();
+        const getQueuedSmsQuery = storeLogs();
         const now = new Date(); // Declare now
         const dateToday = format(now, "yyyy-MM-dd HH:mm:ss");
 
@@ -172,11 +175,11 @@ function SummaryScreen() {
 
                 if (getCat1) {
                     jobRemediationType = "Cat1";
-                    remediationTime = clientRemediationDuration.cat1_reinspect_remediation;
-                    durationUnit = clientRemediationDuration.cat1_reinspect_remediation_duration_unit;
+                    remediationTime = clientRemediationDuration.cat1_remediate_complete;
+                    durationUnit = clientRemediationDuration.cat1_remediate_complete_duration_unit;
                 } else {
-                    remediationTime = clientRemediationDuration.nc_reinspect_remediation;
-                    durationUnit = clientRemediationDuration.nc_reinspect_remediation_duration_unit;
+                    remediationTime = clientRemediationDuration.nc_remediate_complete;
+                    durationUnit = clientRemediationDuration.nc_remediate_complete_duration_unit;
                 }
 
                 let adjustedDate;
@@ -193,8 +196,10 @@ function SummaryScreen() {
             const updateCompletedJobsParams = [
                 jobStatus,
                 dateToday,
+                jobRemediationType === "" ? dateToday : null,
                 jobRemediationType,
-                reinspectRemediation,
+                // reinspectRemediation,
+                null,
                 getJobId,
             ];
 
@@ -203,6 +208,23 @@ function SummaryScreen() {
                 await insertOrUpdateData(
                     updateCompletedJobsQuery,
                     updateCompletedJobsParams,
+                );
+            } catch (error) {
+                console.error("Error updating completed jobs:", error);
+            }
+
+            const queuedSmsParams = [
+                getJobId,
+                0,
+                dateToday,
+                dateToday
+            ];
+
+            // Store Queued SMS data
+            try {
+                await insertOrUpdateData(
+                    getQueuedSmsQuery,
+                    queuedSmsParams,
                 );
             } catch (error) {
                 console.error("Error updating completed jobs:", error);

@@ -203,6 +203,7 @@ export const updateCompletedJobs = () => {
     return `UPDATE jobs
             SET job_status_id = ?,
                 last_update = ?,
+                close_date = ?,
                 job_remediation_type = ?,
                 rework_deadline = ?
             WHERE id LIKE ?`;

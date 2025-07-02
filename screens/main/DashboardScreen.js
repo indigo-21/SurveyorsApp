@@ -68,8 +68,8 @@ function DashboardScreen() {
             Alert.alert(
                 "Logout Failed",
                 error.response?.data.message ||
-                    error.message ||
-                    "There's an issue logging out your account, please try again later.",
+                error.message ||
+                "There's an issue logging out your account, please try again later.",
             );
             setIsLoggingOut(false);
         }
@@ -93,22 +93,25 @@ function DashboardScreen() {
         const initialized = await AsyncStorage.getItem("db_initialized");
         if (initialized !== "true") {
             setIsFetching(true);
-            // try {
-            //     await dropAllTables();
+            try {
+                // Drop all tables first and wait for completion
+                await dropAllTables();
+                console.log('Tables dropped successfully, proceeding with initialization');
 
-            // } catch (error) {
-            //     console.error("Error dropping tables:", error);
-            //     Alert.alert(
-            //         "Initialization Failed",
-            //         "There was an error while initializing the database. Please try again later.",
-            //     );
-            //     setIsFetching(false);
-            //     return;
-            // }
+                // Only proceed if dropAllTables completed successfully
+                console.log('initializeDB called');
+                await initializeDB();
+                await fetchAllData();
 
-            // console.log('initializeDB called');
-            await initializeDB();
-            await fetchAllData();
+            } catch (error) {
+                console.error("Error during database initialization:", error);
+                Alert.alert(
+                    "Initialization Failed",
+                    "There was an error while initializing the database. Please try again later.",
+                );
+                setIsFetching(false);
+                return;
+            }
             await AsyncStorage.setItem("db_initialized", "true");
         }
         setIsFetching(false);
@@ -138,8 +141,8 @@ function DashboardScreen() {
                 Alert.alert(
                     "Fetching Failed",
                     error.response?.data.message ||
-                        error.message ||
-                        "Please try again later.",
+                    error.message ||
+                    "Please try again later.",
                 );
             })
             .finally(() => {

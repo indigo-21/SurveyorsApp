@@ -28,10 +28,10 @@ const foreignKeys = [
 export const clientsTable = createTableSQL('clients', clientsProps, foreignKeys);
 
 export const getClientReinspectRemediation = () => {
-    return `SELECT csm.cat1_reinspect_remediation, 
-                csm.cat1_reinspect_remediation_duration_unit, 
-                csm.nc_reinspect_remediation, 
-                csm.nc_reinspect_remediation_duration_unit FROM jobs j 
+    return `SELECT csm.cat1_remediate_complete, 
+                csm.cat1_remediate_complete_duration_unit, 
+                csm.nc_remediate_complete, 
+                csm.nc_remediate_complete_duration_unit FROM jobs j 
             LEFT JOIN clients c 
             ON j.client_id = c.id 
             LEFT JOIN client_sla_metrics csm 
