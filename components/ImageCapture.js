@@ -34,13 +34,29 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
             quality: 0.5,
             cameraType: ImagePicker.CameraType.back,
         });
+        console.log(image);
 
         if (!image.canceled) {
+            // Generate filename if it's null
+            const generateFileName = () => {
+                if (image.assets[0].fileName) {
+                    return image.assets[0].fileName;
+                }
+                // Extract filename from URI or generate timestamp-based name
+                const uriParts = image.assets[0].uri.split('/');
+                const fileNameFromUri = uriParts[uriParts.length - 1];
+                if (fileNameFromUri && fileNameFromUri.includes('.')) {
+                    return fileNameFromUri;
+                }
+                // Generate timestamp-based filename
+                return `image_${Date.now()}.jpg`;
+            };
+
             const newImageArray = [
                 ...imageUri,
                 {
                     uri: image.assets[0].uri,
-                    fileName: image.assets[0].fileName,
+                    fileName: generateFileName(),
                 },
             ];
             setImageUri(newImageArray);

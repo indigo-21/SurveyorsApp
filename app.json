@@ -1,50 +1,63 @@
 {
-    "expo": {
-        "name": "Surveyors App",
-        "slug": "Surveyors App",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/agility_logo_login.png",
-        "userInterfaceStyle": "light",
-        "newArchEnabled": true,
-        "splash": {
-            "image": "./assets/images/agility_logo_login.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#fff"
-        },
-        "ios": {
-            "supportsTablet": true
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/agility_logo_login.png",
-                "backgroundColor": "#fff"
-            },
-            "edgeToEdgeEnabled": true,
-            "package": "com.anonymous.SurveyorsApp"
-        },
-        "web": {
-            "favicon": "./assets/favicon.png"
-        },
-        "plugins": [
-            [
-                "expo-camera",
-                {
-                    "cameraPermission": "Allow Agility Eco to access your camera",
-                    "microphonePermission": "Allow Agility Eco to access your microphone",
-                    "recordAudioAndroid": true
-                }
-            ],
-            [
-                "expo-image-picker",
-                {
-                    "photosPermission": "The app accesses your photos to let you upload images",
-                    "cameraPermission": "Allow Agility Eco to access your camera",
-                    "microphonePermission": "Allow Agility Eco to access your microphone",
-                    "recordAudioAndroid": true
-                }
-            ],
-            "expo-sqlite"
-        ]
+  "expo": {
+    "name": "Surveyors App",
+    "slug": "surveyors-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/agility_logo_login.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/agility_logo_login.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fff"
+    },
+    "ios": {
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "orientation": "portrait"
+    },
+    "android": {
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/agility_logo_login.png",
+        "backgroundColor": "#fff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.SurveyorsApp",
+      "orientation": "portrait",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Agility Eco to access your camera",
+          "microphonePermission": "Allow Agility Eco to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you upload images",
+          "cameraPermission": "Allow Agility Eco to access your camera",
+          "microphonePermission": "Allow Agility Eco to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      "expo-sqlite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "90dc8def-813a-4eee-aa7b-82754d1a8b40"
+      }
     }
+  }
 }
