@@ -174,7 +174,7 @@ function OTPVerificationScreen() {
                                 }}
                             >
                                 <Image
-                                    source={require("../../assets/images/agility_logo_login.png")}
+                                    source={require("../../assets/images/agility_logo.png")}
                                     style={styles.logo}
                                 />
                             </View>

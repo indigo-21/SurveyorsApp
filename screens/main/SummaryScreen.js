@@ -199,6 +199,7 @@ function SummaryScreen() {
                 jobRemediationType === "" ? dateToday : null,
                 jobRemediationType,
                 reinspectRemediation,
+                dateToday,
                 // null,
                 getJobId,
             ];

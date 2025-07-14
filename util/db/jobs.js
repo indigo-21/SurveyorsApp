@@ -27,6 +27,8 @@ const jobParams = `
     installer_id INTEGER,
     sub_installer_tmln TEXT,
     scheme_id INTEGER,
+    sent_reminder INTEGER DEFAULT 0,
+    completed_survey_date INTEGER DEFAULT NULL,
     csv_filename TEXT,
     created_at TEXT,
     updated_at TEXT,
@@ -205,7 +207,8 @@ export const updateCompletedJobs = () => {
                 last_update = ?,
                 close_date = ?,
                 job_remediation_type = ?,
-                rework_deadline = ?
+                rework_deadline = ?,
+                completed_survey_date = ?
             WHERE id LIKE ?`;
 };
 

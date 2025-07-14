@@ -40,7 +40,7 @@ function QRCodeScreen() {
         >
             <View style={styles.container}>
                 <Image
-                    source={require("../../assets/images/agility_logo_login.png")}
+                    source={require("../../assets/images/agility_logo.png")}
                     style={styles.image}
                     resizeMode="contain"
                 />
