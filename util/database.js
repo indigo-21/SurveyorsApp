@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import * as FileSystem from 'expo-file-system';
 import axiosInstance from './axiosInstance';
 import { format } from 'date-fns';
 
@@ -74,11 +75,70 @@ const tableSchemas = [
 
 let dbInstance = null;
 
+export const closeDB = async () => {
+    if (dbInstance) {
+        try {
+            // Try to close gracefully
+            await dbInstance.closeAsync();
+            console.log('Database connection closed gracefully');
+        } catch (error) {
+            console.warn('Error closing database gracefully, forcing close:', error.message);
+        } finally {
+            // Always reset the instance regardless of errors
+            dbInstance = null;
+        }
+    }
+};
+
+export const resetDatabaseFile = async () => {
+    try {
+        // Close any existing connections
+        await closeDB();
+        
+        // Get the database file path
+        const dbPath = `${FileSystem.documentDirectory}SQLite/agility_eco.db`;
+        
+        // Check if database file exists and delete it
+        const fileInfo = await FileSystem.getInfoAsync(dbPath);
+        if (fileInfo.exists) {
+            await FileSystem.deleteAsync(dbPath);
+            console.log('Database file deleted successfully');
+        }
+        
+        // Also delete WAL and SHM files if they exist
+        const walPath = `${dbPath}-wal`;
+        const shmPath = `${dbPath}-shm`;
+        
+        const walInfo = await FileSystem.getInfoAsync(walPath);
+        if (walInfo.exists) {
+            await FileSystem.deleteAsync(walPath);
+            console.log('WAL file deleted');
+        }
+        
+        const shmInfo = await FileSystem.getInfoAsync(shmPath);
+        if (shmInfo.exists) {
+            await FileSystem.deleteAsync(shmPath);
+            console.log('SHM file deleted');
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error resetting database file:', error);
+        return false;
+    }
+};
+
 const getDB = async () => {
     if (!dbInstance) {
-        dbInstance = await SQLite.openDatabaseAsync('agility_eco.db', {
-            useNewConnection: true
-        });
+        try {
+            dbInstance = await SQLite.openDatabaseAsync('agility_eco.db', {
+                useNewConnection: false // Use shared connection to avoid conflicts
+            });
+            console.log('Database connection opened');
+        } catch (error) {
+            console.error('Error opening database:', error);
+            throw error;
+        }
     }
     return dbInstance;
 };
@@ -88,18 +148,21 @@ export const initializeDB = async () => {
     const db = await getDB();
 
     try {
-        await db.execAsync('PRAGMA foreign_keys = OFF;', []);
+        // Set basic PRAGMA settings for better performance and reliability
+        await db.execAsync('PRAGMA foreign_keys = OFF;');
+        await db.execAsync('PRAGMA journal_mode = WAL;');
+        await db.execAsync('PRAGMA synchronous = NORMAL;');
 
         const tableInit = async () => {
             try {
                 for (const tableSQL of tableSchemas) {
                     // Create table first (with IF NOT EXISTS to avoid errors)
-                    await db.execAsync(tableSQL[0].sql, []);
-                    console.log(`Creatinggggg: ${tableSQL[0].table} created`);
+                    await db.execAsync(tableSQL[0].sql);
+                    console.log(`Created table: ${tableSQL[0].table}`);
 
                     if (tableSQL[0].foreignSql.length > 0) {
                         for (const foreignSQL of tableSQL[0].foreignSql) {
-                            await db.execAsync(foreignSQL, []);
+                            await db.execAsync(foreignSQL);
                         }
                     }
                 }
@@ -114,28 +177,76 @@ export const initializeDB = async () => {
 
         if (tablesCreated) {
             console.log('Tables created and verified!');
-            await fetchDataAPI(db);
+            
+            // Fetch and store data with foreign keys disabled
+            await withForeignKeysDisabled(db, async () => {
+                await fetchDataAPI(db);
+                return true;
+            });
+            
+            console.log('Data insertion completed with foreign keys safely managed');
         }
 
         return db;
     } catch (err) {
         console.error('DB Initialization Error:', err);
+        throw err; // Re-throw to let caller handle
     }
 };
 
 export const dropAllTables = async () => {
-    const db = await getDB();
-
     try {
+        // First, try to close any existing connections
+        await closeDB();
+        
+        // Try the normal approach first
+        try {
+            // Open a fresh connection for dropping tables
+            const db = await getDB();
 
-        await db.withTransactionAsync(async () => {
-            for (const tableSQL of tableSchemas) {
-                await db.execAsync(`DROP TABLE IF EXISTS ${tableSQL[0].table};`, []);
+            console.log('Starting to drop tables...');
+            
+            // Drop tables in reverse order to handle dependencies
+            const reversedSchemas = [...tableSchemas].reverse();
+            
+            for (const tableSQL of reversedSchemas) {
+                try {
+                    await db.execAsync(`DROP TABLE IF EXISTS ${tableSQL[0].table};`);
+                    console.log(`Dropped table: ${tableSQL[0].table}`);
+                } catch (tableError) {
+                    console.warn(`Failed to drop table ${tableSQL[0].table}:`, tableError.message);
+                    // Continue with other tables even if one fails
+                }
             }
-        });
-        console.log('All tables dropped');
+            
+            console.log('All tables dropped successfully');
+            
+            // Close the connection after dropping
+            await closeDB();
+            
+        } catch (normalError) {
+            console.warn('Normal table drop failed, trying database file reset:', normalError.message);
+            
+            // If normal approach fails due to locking, reset the entire database file
+            const resetSuccess = await resetDatabaseFile();
+            if (!resetSuccess) {
+                throw new Error('Both normal drop and file reset failed');
+            }
+            
+            console.log('Database file reset completed successfully');
+        }
+        
     } catch (error) {
         console.error('Error dropping tables:', error);
+        
+        // Force close the connection on error
+        try {
+            await closeDB();
+        } catch (closeError) {
+            console.error('Failed to close database after error:', closeError);
+        }
+        
+        throw error; // Re-throw to let caller handle
     }
 };
 
@@ -160,56 +271,106 @@ const emptyTable = async (db, table) => {
 }
 
 export const fetchDataAPI = async (db) => {
-
     try {
+        // Ensure foreign keys are disabled during data insertion
+        await db.execAsync('PRAGMA foreign_keys = OFF;');
+        console.log('Foreign keys disabled for data insertion');
+        
+        // Insert data in order of tableSchemas to respect dependencies
+        // The tableSchemas array should be ordered to handle foreign key dependencies
         for (const tableSQL of tableSchemas) {
             const tableName = tableSQL[0].table;
 
-            // console.log(`Fetchinggggg: ${tableName} Fetching data from API...`);
+            console.log(`Fetching data for table: ${tableName}...`);
 
-            const response = await axiosInstance.post("/api/fetch-data", {
-                table: tableName
-            });
+            try {
+                const response = await axiosInstance.post("/api/fetch-data", {
+                    table: tableName
+                });
 
-            await storeDataToDB(db, tableName, response.data);
+                await storeDataToDB(db, tableName, response.data);
+                console.log(`Successfully stored data for table: ${tableName}`);
+                
+            } catch (tableError) {
+                console.error(`Error fetching/storing data for table ${tableName}:`, tableError.message);
+                // Continue with other tables even if one fails
+                continue;
+            }
         }
 
+        console.log('All data fetching completed');
+        
     } catch (error) {
-        console.error('Error fetchingggg data:', error.message || error);
-        return null;
+        console.error('Error in fetchDataAPI:', error.message || error);
+        throw error; // Re-throw to let caller handle
     }
-}
+};
+
+export const withForeignKeysDisabled = async (db, operation) => {
+    try {
+        // Disable foreign keys
+        await db.execAsync('PRAGMA foreign_keys = OFF;');
+        
+        // Execute the operation
+        const result = await operation();
+        
+        // Re-enable foreign keys
+        await db.execAsync('PRAGMA foreign_keys = ON;');
+        
+        return result;
+    } catch (error) {
+        // Try to re-enable foreign keys even on error
+        try {
+            await db.execAsync('PRAGMA foreign_keys = ON;');
+        } catch (pragmaError) {
+            console.error('Failed to re-enable foreign keys:', pragmaError);
+        }
+        throw error;
+    }
+};
 
 const storeDataToDB = async (db, table, data) => {
     if (!data || data.length === 0) {
-        // console.log(`No data to store in DB for table: ${table}`);
+        console.log(`No data to store in DB for table: ${table}`);
         return;
     }
-    console.log(`Storing data to DB for table: ${table}...`);
+    console.log(`Storing ${data.length} records to DB for table: ${table}...`);
 
     try {
         await db.withTransactionAsync(async () => {
             for (const item of data) {
-                // if (!item || typeof item !== 'object') {
-                //     console.warn(`Invalid item for table ${table}:`, item);
-                //     continue; // Skip invalid entries
-                // }
+                if (!item || typeof item !== 'object') {
+                    console.warn(`Invalid item for table ${table}:`, item);
+                    continue; // Skip invalid entries
+                }
 
                 const columns = Object.keys(item).join(', ');
                 const placeholders = Object.keys(item).map(() => '?').join(', ');
                 const values = Object.values(item);
 
+                // Handle null values properly
+                const sanitizedValues = values.map(value => 
+                    value === null || value === undefined ? null : value
+                );
+
                 const sql = `INSERT OR REPLACE INTO ${table} (${columns}) VALUES (${placeholders})`;
 
-                // console.log(`Executing SQL for table ${table}:`, sql, values);
-
-                await db.runAsync(sql, values);
+                try {
+                    await db.runAsync(sql, sanitizedValues);
+                } catch (itemError) {
+                    console.error(`Error inserting item into ${table}:`, itemError.message);
+                    console.error(`SQL: ${sql}`);
+                    console.error(`Values:`, sanitizedValues);
+                    // Continue with other items
+                }
             }
         });
 
+        console.log(`Successfully stored data for table: ${table}`);
         return db;
     } catch (err) {
-        console.error('DB Initialization Error:', err);
+        console.error(`DB Storage Error for table ${table}:`, err.message);
+        throw err; // Re-throw to let caller handle
     }
 };
 

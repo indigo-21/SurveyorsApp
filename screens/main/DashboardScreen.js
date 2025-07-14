@@ -27,6 +27,8 @@ import {
     dropAllTables,
     fetchDataFromDB,
     initializeDB,
+    closeDB,
+    resetDatabaseFile,
 } from "../../util/database";
 import { getSurveyQuestionSets } from "../../util/db/surveyQuestionSets";
 import {
@@ -94,25 +96,41 @@ function DashboardScreen() {
         if (initialized !== "true") {
             setIsFetching(true);
             try {
-                // Drop all tables first and wait for completion
+                console.log('Starting database initialization...');
+
+                // Close any existing database connections first
+                await closeDB();
+
+                // Drop all tables and wait for completion
                 await dropAllTables();
                 console.log('Tables dropped successfully, proceeding with initialization');
 
-                // Only proceed if dropAllTables completed successfully
+                // Initialize the database
                 console.log('initializeDB called');
                 await initializeDB();
                 await fetchAllData();
 
+                // Mark as initialized only after everything succeeds
+                await AsyncStorage.setItem("db_initialized", "true");
+                console.log('Database initialization completed successfully');
+
             } catch (error) {
                 console.error("Error during database initialization:", error);
+
+                // Try to close and cleanup on error
+                try {
+                    await closeDB();
+                } catch (closeError) {
+                    console.error("Error closing database after failed initialization:", closeError);
+                }
+
                 Alert.alert(
                     "Initialization Failed",
-                    "There was an error while initializing the database. Please try again later.",
+                    `Database initialization failed: ${error.message}. Please restart the app and try again.`,
                 );
                 setIsFetching(false);
                 return;
             }
-            await AsyncStorage.setItem("db_initialized", "true");
         }
         setIsFetching(false);
     };
@@ -199,8 +217,75 @@ function DashboardScreen() {
     }, [isFocused]);
 
     const syncDataHandler = async () => {
-        await AsyncStorage.setItem("db_initialized", "");
-        checkAndInitialize().catch((err) => console.error("Error:", err));
+        try {
+            console.log('Manual sync triggered');
+            await AsyncStorage.setItem("db_initialized", "false");
+            await checkAndInitialize();
+        } catch (error) {
+            console.error("Error during manual sync:", error);
+            Alert.alert(
+                "Sync Failed",
+                `Failed to sync data: ${error.message}. Please try again.`
+            );
+        }
+    };
+
+    const resetDatabaseHandler = async () => {
+        Alert.alert(
+            "Reset Database",
+            "This will completely reset the database and clear all local data. This is a nuclear option for fixing database lock issues. Do you want to continue?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Reset",
+                    style: "destructive",
+                    onPress: async () => {
+                        setIsFetching(true);
+                        try {
+                            console.log('Starting complete database reset...');
+
+                            // Clear the initialization flag first
+                            await AsyncStorage.setItem("db_initialized", "false");
+
+                            // Close any existing connections
+                            await closeDB();
+
+                            // Reset the entire database file (nuclear option)
+                            const resetSuccess = await resetDatabaseFile();
+                            if (!resetSuccess) {
+                                throw new Error('Failed to reset database file');
+                            }
+
+                            console.log('Database file reset successfully');
+
+                            // Re-initialize the database
+                            await initializeDB();
+                            console.log('Database reinitialized');
+
+                            // Fetch all data again
+                            await fetchAllData();
+                            console.log('Data fetched successfully');
+
+                            // Mark as initialized
+                            await AsyncStorage.setItem("db_initialized", "true");
+
+                            Alert.alert("Success", "Database has been completely reset and reinitialized.");
+                        } catch (error) {
+                            console.error("Error resetting database:", error);
+                            Alert.alert(
+                                "Reset Failed",
+                                `Failed to reset the database: ${error.message}. Please restart the app and try again.`
+                            );
+                        } finally {
+                            setIsFetching(false);
+                        }
+                    },
+                },
+            ],
+        );
     };
 
     if (isLoggingOut) {
@@ -344,6 +429,7 @@ function DashboardScreen() {
                             color={Colors.primary}
                         />
                     </ConfigrationGrid>
+
                     <ConfigrationGrid
                         importedStyles={{ width: 100 }}
                         textContent="Profile"
@@ -362,6 +448,17 @@ function DashboardScreen() {
                             name="exclamation-triangle"
                             size={24}
                             color={Colors.primary}
+                        />
+                    </ConfigrationGrid>
+                    <ConfigrationGrid
+                        importedStyles={{ width: 100 }}
+                        textContent="Reset DB"
+                        onPress={resetDatabaseHandler}
+                    >
+                        <FontAwesome5
+                            name="database"
+                            size={24}
+                            color={Colors.cancel}
                         />
                     </ConfigrationGrid>
                 </ScrollView>
