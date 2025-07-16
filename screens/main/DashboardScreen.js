@@ -46,6 +46,7 @@ function DashboardScreen() {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [url, setUrl] = useState("");
     const [syncCount, setSyncCount] = useState(0);
+    const [isInitializing, setIsInitializing] = useState(false);
 
     const isFocused = useIsFocused();
     const navigation = useNavigation();
@@ -90,13 +91,26 @@ function DashboardScreen() {
     }, []);
 
     const checkAndInitialize = async () => {
+        // Prevent multiple concurrent initialization attempts
+        if (isInitializing) {
+            console.log('Database initialization already in progress');
+            return;
+        }
+
         const initialized = await AsyncStorage.getItem("db_initialized");
         if (initialized !== "true") {
+            setIsInitializing(true);
             setIsFetching(true);
             try {
+                // Add a small delay to ensure any pending database operations complete
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 // Drop all tables first and wait for completion
                 await dropAllTables();
                 console.log('Tables dropped successfully, proceeding with initialization');
+
+                // Add another small delay to ensure cleanup is complete
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 // Only proceed if dropAllTables completed successfully
                 console.log('initializeDB called');
@@ -109,12 +123,14 @@ function DashboardScreen() {
                     "Initialization Failed",
                     "There was an error while initializing the database. Please try again later.",
                 );
+            } finally {
                 setIsFetching(false);
-                return;
+                setIsInitializing(false);
             }
             await AsyncStorage.setItem("db_initialized", "true");
+        } else {
+            setIsFetching(false);
         }
-        setIsFetching(false);
     };
 
     const fetchAllData = async () => {
@@ -199,6 +215,14 @@ function DashboardScreen() {
     }, [isFocused]);
 
     const syncDataHandler = async () => {
+        if (isInitializing) {
+            Alert.alert(
+                "Sync In Progress",
+                "Database initialization is already in progress. Please wait for it to complete."
+            );
+            return;
+        }
+        
         await AsyncStorage.setItem("db_initialized", "");
         checkAndInitialize().catch((err) => console.error("Error:", err));
     };
@@ -347,6 +371,9 @@ function DashboardScreen() {
                     <ConfigrationGrid
                         importedStyles={{ width: 100 }}
                         textContent="Profile"
+                        onPress={() => {
+                            navigation.navigate("Profile");
+                        }}
                     >
                         <FontAwesome5
                             name="user"

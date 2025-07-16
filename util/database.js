@@ -127,6 +127,10 @@ export const dropAllTables = async () => {
     const db = await getDB();
 
     try {
+        // Add PRAGMA to ensure database is not locked
+        await db.execAsync('PRAGMA journal_mode = WAL;');
+        await db.execAsync('PRAGMA synchronous = NORMAL;');
+        await db.execAsync('PRAGMA foreign_keys = OFF;');
 
         await db.withTransactionAsync(async () => {
             for (const tableSQL of tableSchemas) {
@@ -136,6 +140,7 @@ export const dropAllTables = async () => {
         console.log('All tables dropped');
     } catch (error) {
         console.error('Error dropping tables:', error);
+        throw error; // Re-throw to handle in calling function
     }
 };
 

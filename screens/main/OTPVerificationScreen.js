@@ -28,6 +28,7 @@ function OTPVerificationScreen() {
     const authContext = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(false);
     const [enteredOtp, setEnteredOtp] = useState("");
+    const [isNavigating, setIsNavigating] = useState(false);
     const [isResend, setIsResend] = useState({
         isActive: true,
         time: 30,
@@ -59,19 +60,25 @@ function OTPVerificationScreen() {
         setIsLoading(true);
         if (
             parsePropertyInspector.user?.otp != null &&
-            parsePropertyInspector.user?.otp_verified_at != null
+            parsePropertyInspector.user?.otp_verified_at != null &&
+            !isNavigating
         ) {
-            navigation.reset({
-                index: 0,
-                routes: [{ name: "Dashboard" }],
-            });
+            setIsNavigating(true);
+            // Use setTimeout to ensure navigation happens after current render cycle
+            setTimeout(() => {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "Dashboard" }],
+                });
+            }, 100);
         } else {
             sendSMSFunction();
             setIsLoading(false);
         }
     }, [
         parsePropertyInspector.user?.otp,
-        parsePropertyInspector.user?.otp_verified_at
+        parsePropertyInspector.user?.otp_verified_at,
+        isNavigating
     ]);
 
     useEffect(() => {
@@ -131,10 +138,14 @@ function OTPVerificationScreen() {
 
             authContext.updatePropertyInspector(response.otp, response.otp_verified_at);
 
-            navigation.reset({
-                index: 0,
-                routes: [{ name: "Dashboard" }],
-            });
+            setIsNavigating(true);
+            // Use setTimeout to ensure navigation happens after state updates
+            setTimeout(() => {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "Dashboard" }],
+                });
+            }, 100);
         } catch (error) {
             Alert.alert(
                 "Verification Failed",

@@ -20,6 +20,7 @@ import QRCodeScreen from "../screens/login-screens/QRCodeScreen";
 import SummaryScreen from "../screens/main/SummaryScreen";
 import SurveyResultScreen from "../screens/main/SurveyResultScreen";
 import CalendarScreen from "../screens/main/CalendarScreen";
+import ProfileScreen from "../screens/main/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -126,6 +127,14 @@ function AuthenticatedStack() {
             <Stack.Screen
                 name="Calendar"
                 component={CalendarScreen}
+            />
+            
+            <Stack.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{
+                    title: "Profile",
+                }}
             />
         </Stack.Navigator>
     );
