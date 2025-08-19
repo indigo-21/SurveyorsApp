@@ -10,6 +10,7 @@ export const SurveyContext = createContext({
         info: "",
         description: "",
         shortName: "",
+        longName: "",
         jobId: 0,
         jobNumber: 0,
         surveyType: 1,

@@ -13,13 +13,8 @@ import { getPropertyInspectorJobs } from "../../util/db/jobs";
 import { fetchDataFromDB } from "../../util/database";
 
 function CompletedVisitScreen() {
-    const [modalIsVisible, setModalIsVisible] = useState(false);
     const navigation = useNavigation();
     const [jobList, setJobList] = useState([]);
-    const [activeJob, setActiveJob] = useState({
-        jobNumber: "",
-        jobID: "",
-    });
     const isFocused = useIsFocused();
     const authContext = useContext(AuthContext);
 
@@ -56,73 +51,22 @@ function CompletedVisitScreen() {
         }
     }, [isFocused]);
 
-    function navigationPressHandler(job) {
-        setModalIsVisible((prevData) => !prevData);
-        setActiveJob(() => ({
-            jobNumber: job.group_id,
-            jobID: job.id,
-        }));
+    function surveyResultPressHandler(jobNumber, jobID) {
+        // setModalIsVisible((prevData) => !prevData);
+
+        navigation.navigate("SurveyResult", { jobNumber, jobID });
     }
 
-    function surveyResultPressHandler() {
-        setModalIsVisible((prevData) => !prevData);
-
-        navigation.navigate("SurveyResult", { jobNumber: activeJob.jobNumber, jobID: activeJob.jobID });
-    }
-
-    function jobDetailsNavigateHandler() {
-        setModalIsVisible((prevData) => !prevData);
+    function jobDetailsNavigateHandler(jobNumber, jobID) {
+        // setModalIsVisible((prevData) => !prevData);
         navigation.navigate("JobDetails", {
-            jobID: activeJob.jobID,
-            jobNumber: activeJob.jobNumber,
+            jobID,
+            jobNumber,
         });
     }
 
     return (
         <ScreenWrapper>
-            <CustomModal
-                modalVisible={modalIsVisible}
-                setModalVisible={setModalIsVisible}
-                title={activeJob.jobNumber}
-                subtitle="Job Number"
-            >
-                <View style={styles.row}>
-                    <Pressable
-                        android_ripple={{ color: Colors.ripple }}
-                        onPress={surveyResultPressHandler}
-                        style={({ pressed }) =>
-                            pressed
-                                ? [styles.pressedItem, styles.buttonOptions]
-                                : styles.buttonOptions
-                        }
-                    >
-                        <Text style={styles.text}>Survey Result</Text>
-                        <AntDesign
-                            name="rightcircle"
-                            size={24}
-                            color={Colors.primary}
-                        />
-                    </Pressable>
-                </View>
-                <View style={styles.row}>
-                    <Pressable
-                        android_ripple={{ color: Colors.ripple }}
-                        onPress={jobDetailsNavigateHandler}
-                        style={({ pressed }) =>
-                            pressed
-                                ? [styles.pressedItem, styles.buttonOptions]
-                                : styles.buttonOptions
-                        }
-                    >
-                        <Text style={styles.text}>Job Details</Text>
-                        <AntDesign
-                            name="rightcircle"
-                            size={24}
-                            color={Colors.primary}
-                        />
-                    </Pressable>
-                </View>
-            </CustomModal>
             <ScreenTitle title="List of Completed Visits" />
             <View style={styles.container}>
                 <FlatList
@@ -130,85 +74,116 @@ function CompletedVisitScreen() {
                     data={[...jobList].reverse()}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
-                        <JobList onPress={() => navigationPressHandler(item)}>
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    width: "100%",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <View style={styles.clientRow}>
-                                    <Text style={styles.clientName}>
-                                        {item.client_abbrevation}
-                                    </Text>
-                                </View>
-                                <View style={{ flex: 1, marginLeft: 16 }}>
-                                    <Text
-                                        style={{
-                                            fontSize: 16,
-                                            fontWeight: "bold",
-                                        }}
-                                    >
-                                        {item.group_id}
-                                    </Text>
+                        <JobList>
+                            <View style={{ flexDirection: "column", flex: 1 }}>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        width: "100%",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <View style={styles.clientRow}>
+                                        <Text style={styles.clientName}>
+                                            {item.client_abbrevation}
+                                        </Text>
+                                    </View>
+                                    <View style={{ flex: 1, marginLeft: 16 }}>
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            {item.group_id}
+                                        </Text>
 
-                                    {/* </View> */}
+                                        {/* </View> */}
 
-                                    <Text style={{ fontSize: 12 }}>
-                                        Address: {item.address1}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Postcode: {item.postcode}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Cert No: {item.cert_no}
-                                    </Text>
-                                </View>
-                                <View style={styles.chip}>
-                                    <View
-                                        style={{
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        {item.job_status_id === 3 ? (
-                                            <View
-                                                style={{
-                                                    backgroundColor:
-                                                        Colors.success,
-                                                    padding: 4,
-                                                    paddingHorizontal: 8,
-                                                    borderRadius: 20,
-                                                }}
-                                            >
-                                                <Text
+                                        <Text style={{ fontSize: 12 }}>
+                                            Address: {item.address1}
+                                        </Text>
+                                        <Text style={{ fontSize: 12 }}>
+                                            Postcode: {item.postcode}
+                                        </Text>
+                                        <Text style={{ fontSize: 12 }}>
+                                            Cert No: {item.cert_no}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.chip}>
+                                        <View
+                                            style={{
+                                                flexDirection: "row",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            {item.job_status_id === 3 ? (
+                                                <View
                                                     style={{
-                                                        color: Colors.white,
+                                                        backgroundColor:
+                                                            Colors.success,
+                                                        padding: 4,
+                                                        paddingHorizontal: 8,
+                                                        borderRadius: 20,
                                                     }}
                                                 >
-                                                    Passed
-                                                </Text>
-                                            </View>
-                                        ) : (
-                                            <View
-                                                style={{
-                                                    backgroundColor:
-                                                        Colors.secondary,
-                                                    padding: 4,
-                                                    paddingHorizontal: 8,
-                                                    borderRadius: 20,
-                                                }}
-                                            >
-                                                <Text
+                                                    <Text
+                                                        style={{
+                                                            color: Colors.white,
+                                                        }}
+                                                    >
+                                                        Passed
+                                                    </Text>
+                                                </View>
+                                            ) : (
+                                                <View
                                                     style={{
-                                                        color: Colors.white,
+                                                        backgroundColor:
+                                                            Colors.secondary,
+                                                        padding: 4,
+                                                        paddingHorizontal: 8,
+                                                        borderRadius: 20,
                                                     }}
                                                 >
-                                                    Failed
-                                                </Text>
-                                            </View>
-                                        )}
+                                                    <Text
+                                                        style={{
+                                                            color: Colors.white,
+                                                        }}
+                                                    >
+                                                        Failed
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end" }}>
+                                    <View style={{ flexDirection: "row", alignItems: "center", paddingTop: 16, borderRadius: 2 }}>
+                                        <Pressable
+                                            onPress={() => surveyResultPressHandler(item.group_id, item.id)}
+                                            style={({ pressed }) => [
+                                                { padding: 8, borderRadius: 4 },
+                                                pressed && { backgroundColor: Colors.ripple }
+                                            ]}
+                                        >
+                                            <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                Survey Result
+                                            </Text>
+                                        </Pressable>
+                                        <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
+                                        <Pressable
+                                            onPress={() => jobDetailsNavigateHandler(item.group_id, item.id)}
+                                            style={({ pressed }) => [
+                                                { padding: 8, borderRadius: 4 },
+                                                pressed && { backgroundColor: Colors.ripple }
+                                            ]}
+                                        >
+                                            <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                Job Details
+                                            </Text>
+                                        </Pressable>
+
                                     </View>
                                 </View>
                             </View>
@@ -233,7 +208,7 @@ const styles = StyleSheet.create({
         height: 60,
         width: 60,
         borderRadius: 30,
-        marginLeft: 16,
+        marginLeft: 8,
     },
     clientName: {
         fontWeight: "bold",

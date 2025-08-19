@@ -26,6 +26,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
     dropAllTables,
     fetchDataFromDB,
+    fetchFirstDataFromDB,
     initializeDB,
 } from "../../util/database";
 import { getSurveyQuestionSets } from "../../util/db/surveyQuestionSets";
@@ -36,6 +37,7 @@ import {
 import { setSyncReady } from "./services/SyncStatusService";
 import { getLogs } from "../../util/db/tempSyncLogs";
 import eventbus from "../../events/eventbus";
+import { getPropertyInspector } from "../../util/db/propertyInspectors";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -47,6 +49,8 @@ function DashboardScreen() {
     const [url, setUrl] = useState("");
     const [syncCount, setSyncCount] = useState(0);
     const [isInitializing, setIsInitializing] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [canBookJobs, setCanBookJobs] = useState(0);
 
     const isFocused = useIsFocused();
     const navigation = useNavigation();
@@ -56,8 +60,6 @@ function DashboardScreen() {
     const propertyInspector = authContext.propertyInspector;
     const userID = propertyInspector.user.id;
     const propertyInspectorID = propertyInspector.user.property_inspector.id;
-
-    // console.log(propertyInspector);
 
     const pressLogoutHandler = async () => {
         setIsLoggingOut(true);
@@ -104,7 +106,7 @@ function DashboardScreen() {
             try {
                 // Add a small delay to ensure any pending database operations complete
                 await new Promise(resolve => setTimeout(resolve, 500));
-                
+
                 // Drop all tables first and wait for completion
                 await dropAllTables();
                 console.log('Tables dropped successfully, proceeding with initialization');
@@ -114,7 +116,7 @@ function DashboardScreen() {
 
                 // Only proceed if dropAllTables completed successfully
                 console.log('initializeDB called');
-                await initializeDB();
+                await initializeDB(propertyInspectorID);
                 await fetchAllData();
 
             } catch (error) {
@@ -131,6 +133,8 @@ function DashboardScreen() {
         } else {
             setIsFetching(false);
         }
+
+        setIsInitialized(true);
     };
 
     const fetchAllData = async () => {
@@ -171,7 +175,7 @@ function DashboardScreen() {
     }, []);
 
     useEffect(() => {
-        if (isFocused) {
+        if (isFocused && isInitialized) {
             const fetchData = async () => {
                 setIsFetching(true);
                 try {
@@ -185,7 +189,19 @@ function DashboardScreen() {
             };
             fetchData();
         }
-    }, [isFocused]);
+
+        const getPropertyInspectorData = async () => {
+            try {
+                const propertyInspectorData = await fetchFirstDataFromDB(getPropertyInspector(), propertyInspectorID);
+                setCanBookJobs(propertyInspectorData.can_book_jobs);
+            } catch (error) {
+                console.error("Error fetching property inspector data:", error);
+            }
+        }
+
+        getPropertyInspectorData();
+
+    }, [isFocused, isInitialized]);
 
     useEffect(() => {
         const logsQuery = getLogs();
@@ -198,13 +214,15 @@ function DashboardScreen() {
             }
         };
 
-        if (isFocused) {
+        if (isFocused && isInitialized && !isInitializing) {
             fetchLogs();
         }
 
         const logsChangedHandler = () => {
             console.log("logsChanged event received");
-            fetchLogs();
+            if (isInitialized && !isInitializing) {
+                fetchLogs();
+            }
         };
 
         eventbus.on("logsChanged", logsChangedHandler);
@@ -212,7 +230,7 @@ function DashboardScreen() {
         return () => {
             eventbus.off("logsChanged", logsChangedHandler);
         };
-    }, [isFocused]);
+    }, [isFocused, isInitialized, isInitializing]);
 
     const syncDataHandler = async () => {
         if (isInitializing) {
@@ -222,7 +240,8 @@ function DashboardScreen() {
             );
             return;
         }
-        
+
+        setIsInitialized(false);
         await AsyncStorage.setItem("db_initialized", "");
         checkAndInitialize().catch((err) => console.error("Error:", err));
     };
@@ -431,7 +450,7 @@ function DashboardScreen() {
                         Completed Visits
                     </Text>
                 </BoxGrid>
-                {propertyInspector.user.property_inspector.can_book_jobs ? (
+                {canBookJobs ? (
                     <BoxGrid
                         image={require("../../assets/images/book.png")}
                         onPress={() => {

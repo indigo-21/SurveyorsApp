@@ -150,14 +150,16 @@ export const updateBookingJob = () => {
             SET job_status_id = ?,
                 last_update = ?,
                 schedule_date = ?
-            WHERE job_number LIKE ?`;
+            WHERE job_number LIKE ? 
+            AND job_status_id IN (1, 2, 25)`;
 }
 
 export const updateBookedJob = () => {
     return `UPDATE jobs
             SET job_status_id = ?,
             last_update = ?
-            WHERE job_number LIKE ?`;
+            WHERE job_number LIKE ?
+            AND job_status_id IN (1, 2, 25)`;
 }
 
 export const closeJob = () => {
@@ -165,7 +167,8 @@ export const closeJob = () => {
             SET job_status_id = ?,
                 last_update = ?,
                 close_date = ?
-            WHERE job_number LIKE ?`;
+            WHERE job_number LIKE ?
+            AND job_status_id IN (1, 2, 25)`;
 };
 
 export const updateJobForCustomerNoShow = () => {
@@ -173,7 +176,8 @@ export const updateJobForCustomerNoShow = () => {
             SET job_status_id = ?,
                 last_update = ?,
                 max_noshow = max_noshow + 1
-            WHERE job_number LIKE ?`;
+            WHERE job_number LIKE ?
+            AND job_status_id IN (1, 2, 25)`;
 };
 
 export const getClientMaxNoShow = () => {
@@ -198,7 +202,8 @@ export const getJobSummary = () => {
             ON m.id = jm.measure_id
             LEFT JOIN schemes s
             ON s.id = j.scheme_id
-            WHERE j.job_number LIKE ?`;
+            WHERE j.job_number LIKE ?
+            AND job_status_id IN (1)`;
 };
 
 export const updateCompletedJobs = () => {

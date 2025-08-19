@@ -351,10 +351,7 @@ function SummaryScreen() {
                     ) : (
                         <Text>No job summary available.</Text>
                     )}
-                </ScrollView>
-            </View>
-            <View style={{ justifyContent: "flex-end" }}>
-                <View style={styles.content}>
+
                     <CustomButton
                         text="Submit"
                         importedStyles={[
@@ -368,12 +365,13 @@ function SummaryScreen() {
                             {
                                 color: Colors.white,
                                 marginTop: 16,
+                                marginBottom: 32,
                             },
                         ]}
                         disabled={!allJobsComplete}
                         onPress={submitSurveyHandler}
                     />
-                </View>
+                </ScrollView>
             </View>
         </ScreenWrapper>
     );

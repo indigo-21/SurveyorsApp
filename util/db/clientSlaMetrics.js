@@ -3,7 +3,7 @@ import createTableSQL from "../createTable";
 const clientSlaMetricsProps = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     client_id INTEGER NOT NULL,
-    client_maximum_retries INTEGER DEFAULT 12,
+    client_maximum_retries INTEGER DEFAULT NULL,
     maximum_booking_attempts TEXT DEFAULT NULL,
     maximum_remediation_attempts TEXT DEFAULT NULL,
     maximum_no_show TEXT DEFAULT NULL,

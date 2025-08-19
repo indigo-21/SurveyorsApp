@@ -7,7 +7,7 @@ import Colors from "../../constants/Colors";
 import JobDetailsBox from "../../components/JobDetailsBox";
 import { getJobDetails } from "../../util/db/jobs";
 import { fetchDataFromDB } from "../../util/database";
-import { getJobMeasures } from "../../util/db/jobMeasures";
+import { getJobMeasures, getJobMeasuresDetails } from "../../util/db/jobMeasures";
 import ScreenWrapper from "../../components/ScreenWrapper";
 
 function JobDetailsScreen() {
@@ -34,7 +34,7 @@ function JobDetailsScreen() {
         // Optionally, check a global "dbReady" flag/context here
         if (isFocused) {
             const getJobDetailsQuery = getJobDetails();
-            const getJobMeasuresQuery = getJobMeasures();
+            const getJobMeasuresQuery = getJobMeasuresDetails();
 
             const jobDetails = async () => {
                 try {

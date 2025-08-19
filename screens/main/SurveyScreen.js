@@ -39,6 +39,7 @@ function SurveyScreen() {
                         info: data[0].info,
                         description: data[0].description,
                         shortName: data[0].short_name,
+                        longName: data[0].long_name,
                         jobId: jobID,
                         jobNumber: jobNumber,
                         measureCat: data[0].measure_cat,
@@ -76,13 +77,13 @@ function SurveyScreen() {
                 <View style={styles.content}>
                     <Text style={styles.contentTitle}>Scheme Measure Info</Text>
                     <Text style={styles.contentText}>
-                        {surveyContext.jobInfo.info}
+                        {surveyContext.jobInfo.info ?? "No Info Available"}
                     </Text>
                 </View>
                 <View style={styles.content}>
                     <Text style={styles.contentTitle}>Scheme</Text>
                     <Text style={styles.contentText}>
-                        Energy Company Obligation (ECO)
+                        {surveyContext.jobInfo.longName} ({surveyContext.jobInfo.shortName})
                     </Text>
                     <Text style={styles.contentDescription}>
                         {surveyContext.jobInfo.description}
@@ -109,18 +110,18 @@ function SurveyScreen() {
                                 importedStyles={
                                     surveyContext.jobInfo.measureId ===
                                         item.measure_id &&
-                                    surveyContext.jobInfo.umr === item.umr
+                                        surveyContext.jobInfo.umr === item.umr
                                         ? {
-                                              backgroundColor: Colors.primary,
-                                              width: 120,
-                                          }
+                                            backgroundColor: Colors.primary,
+                                            width: 120,
+                                        }
                                         : { width: 120 }
                                 }
                                 textContent={`(${item.short_name})`}
                                 onPress={() => changeMeasureHandler(item)}
                                 active={
                                     surveyContext.jobInfo.measureId ===
-                                        item.measure_id &&
+                                    item.measure_id &&
                                     surveyContext.jobInfo.umr === item.umr
                                 }
                             >
@@ -128,11 +129,11 @@ function SurveyScreen() {
                                     style={
                                         surveyContext.jobInfo.measureId ===
                                             item.measure_id &&
-                                        surveyContext.jobInfo.umr === item.umr
+                                            surveyContext.jobInfo.umr === item.umr
                                             ? [
-                                                  styles.text,
-                                                  { color: Colors.white },
-                                              ]
+                                                styles.text,
+                                                { color: Colors.white },
+                                            ]
                                             : styles.text
                                     }
                                 >

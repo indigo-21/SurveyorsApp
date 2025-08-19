@@ -35,6 +35,7 @@ function LoginScreen() {
                 enteredEmail,
                 enteredPassword,
             );
+
             const token = propertyInspectorData.token;
             const propertyInspector = propertyInspectorData;
             authContext.authenticate(token, propertyInspector);

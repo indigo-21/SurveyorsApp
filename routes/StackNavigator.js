@@ -70,8 +70,8 @@ function AuthenticatedStack() {
                         <Image
                             source={require("../assets/images/AgilityEco_WhiteLogo.png")}
                             style={{
-                                width: 120,
-                                height: 70,
+                                width: 180,
+                                height: 40,
                                 resizeMode: "contain",
                                 alignSelf: "center",
                             }}

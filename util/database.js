@@ -83,7 +83,7 @@ const getDB = async () => {
     return dbInstance;
 };
 
-export const initializeDB = async () => {
+export const initializeDB = async (propertyInspectorID) => {
     // await dropAllTables();
     const db = await getDB();
 
@@ -93,7 +93,6 @@ export const initializeDB = async () => {
         const tableInit = async () => {
             try {
                 for (const tableSQL of tableSchemas) {
-                    // Create table first (with IF NOT EXISTS to avoid errors)
                     await db.execAsync(tableSQL[0].sql, []);
                     console.log(`Creatinggggg: ${tableSQL[0].table} created`);
 
@@ -114,7 +113,7 @@ export const initializeDB = async () => {
 
         if (tablesCreated) {
             console.log('Tables created and verified!');
-            await fetchDataAPI(db);
+            await fetchDataAPI(db, propertyInspectorID);
         }
 
         return db;
@@ -164,7 +163,7 @@ const emptyTable = async (db, table) => {
     }
 }
 
-export const fetchDataAPI = async (db) => {
+export const fetchDataAPI = async (db, propertyInspectorID) => {
 
     try {
         for (const tableSQL of tableSchemas) {
@@ -173,7 +172,8 @@ export const fetchDataAPI = async (db) => {
             // console.log(`Fetchinggggg: ${tableName} Fetching data from API...`);
 
             const response = await axiosInstance.post("/api/fetch-data", {
-                table: tableName
+                table: tableName,
+                property_inspector_id: propertyInspectorID,
             });
 
             await storeDataToDB(db, tableName, response.data);

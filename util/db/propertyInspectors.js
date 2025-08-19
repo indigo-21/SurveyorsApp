@@ -43,4 +43,8 @@ const foreignKeys = [
     'charging_scheme_id',
 ];
 
+export const getPropertyInspector = () => {
+    return `SELECT * FROM property_inspectors WHERE id = ?`;
+}
+
 export const propertyInspectorsTable = createTableSQL('property_inspectors', propertyInspectorsProps, foreignKeys);

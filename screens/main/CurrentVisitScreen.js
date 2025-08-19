@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -10,7 +10,6 @@ import JobList from "../../components/JobList";
 import CustomModal from "../../components/CustomModal";
 import ScreenTitle from "../../components/ScreenTitle";
 import ScreenWrapper from "../../components/ScreenWrapper";
-import CustomModalBtn from "../../components/CustomModalBtn";
 import { bookPIJob } from "../../util/db/bookings";
 import { fetchDataFromDB, insertOrUpdateData } from "../../util/database";
 import {
@@ -25,13 +24,7 @@ import { getAllJobStatuses } from "../../util/db/jobStatuses";
 import CustomButton from "../../components/CustomButton";
 
 function CurrentVisitScreen() {
-    const [modalIsVisible, setModalIsVisible] = useState(false);
     const [filterModal, setFilterModal] = useState(false);
-    const [activeJob, setActiveJob] = useState({
-        jobNumber: "",
-        jobID: "",
-        isBooked: false,
-    });
     const [dropdownValue, setDropdownValue] = useState({
         measureCat: [],
         postcode: [],
@@ -81,41 +74,22 @@ function CurrentVisitScreen() {
         }
     }, [refetchJobs, isFocused]);
 
-    function navigationPressHandler(job) {
-        setModalIsVisible((prevData) => !prevData);
-
-        if (job.job_status_id === 1) {
-            setActiveJob(() => ({
-                jobNumber: job.group_id,
-                jobID: job.id,
-                isBooked: true,
-            }));
-        } else {
-            setActiveJob(() => ({
-                jobNumber: job.group_id,
-                jobID: job.id,
-                isBooked: false,
-            }));
-        }
-    }
-
-    async function bookJobPressHandler() {
-        setModalIsVisible((prevData) => !prevData);
+    async function bookJobPressHandler(jobNumber) {
         setRefetchJobs((prevData) => !prevData);
 
         const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
         const bookJobQuery = bookPIJob();
         const bookParams = [
-            activeJob.jobNumber,
+            jobNumber,
             "Booked",
             userID,
             propertyInspectorID,
             formattedDate,
             "Accepted By " +
-                propertyInspector.user.firstname +
-                " " +
-                propertyInspector.user.lastname,
+            propertyInspector.user.firstname +
+            " " +
+            propertyInspector.user.lastname,
             formattedDate,
             formattedDate,
         ];
@@ -124,7 +98,7 @@ function CurrentVisitScreen() {
         const updateParams = [
             1,
             formattedDate,
-            "%" + activeJob.jobNumber + "%",
+            "%" + jobNumber + "%",
         ];
 
         try {
@@ -185,70 +159,8 @@ function CurrentVisitScreen() {
             });
     };
 
-    // console.log(filterValues);
-
     return (
         <ScreenWrapper>
-            <CustomModal
-                modalVisible={modalIsVisible}
-                setModalVisible={setModalIsVisible}
-                title={activeJob.jobNumber}
-                subtitle="Job Number"
-            >
-                {activeJob.isBooked && (
-                    <>
-                        <CustomModalBtn
-                            title="Update Status"
-                            onPress={() => {
-                                setModalIsVisible((prevData) => !prevData);
-                                navigation.navigate("UpdateJob", {
-                                    jobID: activeJob.jobID,
-                                    jobNumber: activeJob.jobNumber,
-                                });
-                            }}
-                        />
-                        <CustomModalBtn
-                            title="Job Details"
-                            onPress={() => {
-                                setModalIsVisible((prevData) => !prevData);
-                                navigation.navigate("JobDetails", {
-                                    jobID: activeJob.jobID,
-                                    jobNumber: activeJob.jobNumber,
-                                });
-                            }}
-                        />
-                        <CustomModalBtn
-                            title="Start Survey"
-                            onPress={() => {
-                                setModalIsVisible((prevData) => !prevData);
-                                navigation.navigate("Survey", {
-                                    jobID: activeJob.jobID,
-                                    jobNumber: activeJob.jobNumber,
-                                });
-                            }}
-                        />
-                    </>
-                )}
-
-                {!activeJob.isBooked && (
-                    <>
-                        <CustomModalBtn
-                            title="Book"
-                            onPress={bookJobPressHandler}
-                        />
-                        <CustomModalBtn
-                            title="Job Details"
-                            onPress={() => {
-                                setModalIsVisible((prevData) => !prevData);
-                                navigation.navigate("JobDetails", {
-                                    jobID: activeJob.jobID,
-                                    jobNumber: activeJob.jobNumber,
-                                });
-                            }}
-                        />
-                    </>
-                )}
-            </CustomModal>
 
             <CustomModal
                 modalVisible={filterModal}
@@ -366,61 +278,158 @@ function CurrentVisitScreen() {
                     data={[...jobList].reverse()}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
-                        <JobList onPress={() => navigationPressHandler(item)}>
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    width: "100%",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <View style={styles.clientRow}>
-                                    <Text style={styles.clientName}>
-                                        {item.client_abbrevation}
-                                    </Text>
-                                </View>
-                                <View style={{ flex: 1, marginLeft: 16 }}>
-                                    <Text
-                                        style={{
-                                            fontSize: 16,
-                                            fontWeight: "bold",
-                                        }}
-                                    >
-                                        {item.group_id}
-                                    </Text>
+                        <JobList>
+                            <View style={{ flexDirection: "column", flex: 1 }}>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        width: "100%",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <View style={styles.clientRow}>
+                                        <Text style={styles.clientName}>
+                                            {item.client_abbrevation}
+                                        </Text>
+                                    </View>
+                                    <View style={{ flex: 1, marginLeft: 16 }}>
+                                        <Text
+                                            style={{
+                                                fontSize: 18,
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            {item.group_id}
+                                        </Text>
 
-                                    {/* </View> */}
+                                        {/* </View> */}
 
-                                    <Text style={{ fontSize: 12 }}>
-                                        Address: {item.address1}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Postcode: {item.postcode}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Cert No: {item.cert_no}
-                                    </Text>
+                                        <Text style={{ fontSize: 14 }}>
+                                            Address: {item.address1}
+                                        </Text>
+                                        <Text style={{ fontSize: 14 }}>
+                                            Postcode: {item.postcode}
+                                        </Text>
+                                        <Text style={{ fontSize: 14 }}>
+                                            Cert No: {item.cert_no}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.chip}>
+                                        <View
+                                            style={{
+                                                flexDirection: "row",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            {item.job_status_id === 1 ? (
+                                                <AntDesign
+                                                    name="checkcircle"
+                                                    size={24}
+                                                    color={Colors.success}
+                                                />
+                                            ) : (
+                                                <AntDesign
+                                                    name="exclamationcircle"
+                                                    size={24}
+                                                    color={Colors.warning}
+                                                />
+                                            )}
+                                        </View>
+                                    </View>
                                 </View>
-                                <View style={styles.chip}>
-                                    <View
-                                        style={{
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        {item.job_status_id === 1 ? (
-                                            <AntDesign
-                                                name="checkcircle"
-                                                size={24}
-                                                color={Colors.success}
-                                            />
-                                        ) : (
-                                            <AntDesign
-                                                name="exclamationcircle"
-                                                size={24}
-                                                color={Colors.warning}
-                                            />
+
+                                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end" }}>
+                                    <View style={{ flexDirection: "row", alignItems: "center", paddingTop: 16, borderRadius: 2 }}>
+                                        {item.job_status_id === 1 && (
+                                            <>
+                                                <Pressable
+                                                    onPress={() => {
+                                                        navigation.navigate("UpdateJob", {
+                                                            jobID: item.id,
+                                                            jobNumber: item.group_id,
+                                                        });
+                                                    }}
+                                                    style={({ pressed }) => [
+                                                        { padding: 8, borderRadius: 4 },
+                                                        pressed && { backgroundColor: Colors.ripple }
+                                                    ]}
+                                                >
+                                                    <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                        Update
+                                                    </Text>
+                                                </Pressable>
+                                                <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
+                                                <Pressable
+                                                    onPress={() => {
+                                                        navigation.navigate("JobDetails", {
+                                                            jobID: item.id,
+                                                            jobNumber: item.group_id,
+                                                        });
+                                                    }}
+                                                    style={({ pressed }) => [
+                                                        { padding: 8, borderRadius: 4 },
+                                                        pressed && { backgroundColor: Colors.ripple }
+                                                    ]}
+                                                >
+                                                    <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                        Review
+                                                    </Text>
+                                                </Pressable>
+                                                <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
+                                                <Pressable
+                                                    onPress={() => {
+                                                        navigation.navigate("Survey", {
+                                                            jobID: item.id,
+                                                            jobNumber: item.group_id,
+                                                        });
+                                                    }}
+                                                    style={({ pressed }) => [
+                                                        { padding: 8, borderRadius: 4 },
+                                                        pressed && { backgroundColor: Colors.ripple }
+                                                    ]}
+                                                >
+                                                    <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                        Start Survey
+                                                    </Text>
+                                                </Pressable>
+                                            </>
                                         )}
+
+                                        {item.job_status_id === 2 && (
+                                            <>
+                                                <Pressable
+                                                    onPress={() => {
+                                                        bookJobPressHandler(item.group_id);
+                                                    }}
+                                                    style={({ pressed }) => [
+                                                        { padding: 8, borderRadius: 4 },
+                                                        pressed && { backgroundColor: Colors.ripple }
+                                                    ]}
+                                                >
+                                                    <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                        Book
+                                                    </Text>
+                                                </Pressable>
+                                                <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
+                                                <Pressable
+                                                    onPress={() => {
+                                                        navigation.navigate("Survey", {
+                                                            jobID: item.id,
+                                                            jobNumber: item.group_id,
+                                                        });
+                                                    }}
+                                                    style={({ pressed }) => [
+                                                        { padding: 8, borderRadius: 4 },
+                                                        pressed && { backgroundColor: Colors.ripple }
+                                                    ]}
+                                                >
+                                                    <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                        Start Survey
+                                                    </Text>
+                                                </Pressable>
+                                            </>
+                                        )}
+
                                     </View>
                                 </View>
                             </View>
@@ -428,7 +437,7 @@ function CurrentVisitScreen() {
                     )}
                 />
             </View>
-        </ScreenWrapper>
+        </ScreenWrapper >
     );
 }
 

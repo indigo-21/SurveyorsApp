@@ -20,10 +20,6 @@ function BookJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const [unbookedJobs, setUnbookedJobs] = useState([]);
-    const [activeJob, setActiveJob] = useState({
-        jobNumber: "",
-        jobID: "",
-    });
     const authContext = useContext(AuthContext);
     const propertyInspector = authContext.propertyInspector;
     const propertyInspectorID = route.params?.propertyInspectorID;
@@ -35,20 +31,14 @@ function BookJobScreen() {
         });
     }, [navigation]);
 
-    function navigationPressHandler({ jobNumber, jobID }) {
-        setModalIsVisible((prevData) => !prevData);
-
-        setActiveJob({ jobNumber, jobID });
-    }
-
-    async function bookJobPressHandler() {
+    async function bookJobPressHandler(jobNumber, jobID) {
         setModalIsVisible((prevData) => !prevData);
 
         const formattedDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
         const bookJobQuery = bookPIJob();
         const bookParams = [
-            activeJob.jobNumber,
+            jobNumber,
             "Booked",
             userID,
             propertyInspectorID,
@@ -63,7 +53,7 @@ function BookJobScreen() {
             1,
             formattedDate,
             formattedDate,
-            "%" + activeJob.jobNumber + "%",
+            "%" + jobNumber + "%",
         ];
 
         try {
@@ -81,9 +71,9 @@ function BookJobScreen() {
         });
     }
 
-    function jobDetailsNavigateHandler() {
+    function jobDetailsNavigateHandler(jobNumber, jobID) {
         setModalIsVisible((prevData) => !prevData);
-        navigation.navigate("JobDetails", { jobID: activeJob.jobID, jobNumber: activeJob.jobNumber });
+        navigation.navigate("JobDetails", { jobID, jobNumber });
     }
 
     useEffect(() => {
@@ -116,7 +106,7 @@ function BookJobScreen() {
     return (
         <ScreenWrapper>
 
-            <CustomModal
+            {/* <CustomModal
                 setModalVisible={setModalIsVisible}
                 modalVisible={modalIsVisible}
                 title={activeJob.jobNumber}
@@ -124,7 +114,7 @@ function BookJobScreen() {
             >
                 <ModalButton title="Book" onPress={bookJobPressHandler} />
                 <ModalButton title="Job Details" onPress={jobDetailsNavigateHandler} />
-            </CustomModal>
+            </CustomModal> */}
 
             <ScreenTitle title="List of Unbooked Jobs" />
             <View style={styles.container}>
@@ -133,37 +123,67 @@ function BookJobScreen() {
                     data={[...unbookedJobs].reverse()}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
-                        <JobList onPress={() => navigationPressHandler({ jobNumber: item.group_id, jobID: item.id })}>
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    width: "100%",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <View style={styles.clientRow}>
-                                    <Text style={styles.clientName}>
-                                        {item.client_abbrevation}
-                                    </Text>
+                        <JobList>
+                            <View style={{ flexDirection: "column", flex: 1 }}>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        width: "100%",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <View style={styles.clientRow}>
+                                        <Text style={styles.clientName}>
+                                            {item.client_abbrevation}
+                                        </Text>
+                                    </View>
+                                    <View style={{ flex: 1, marginLeft: 16 }}>
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            {item.group_id}
+                                        </Text>
+                                        <Text style={{ fontSize: 12 }}>
+                                            Address: {item.address1}
+                                        </Text>
+                                        <Text style={{ fontSize: 12 }}>
+                                            Postcode: {item.postcode}
+                                        </Text>
+                                        <Text style={{ fontSize: 12 }}>
+                                            Cert No: {item.cert_no}
+                                        </Text>
+                                    </View>
                                 </View>
-                                <View style={{ flex: 1, marginLeft: 16 }}>
-                                    <Text
-                                        style={{
-                                            fontSize: 16,
-                                            fontWeight: "bold",
-                                        }}
-                                    >
-                                        {item.group_id}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Address: {item.address1}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Postcode: {item.postcode}
-                                    </Text>
-                                    <Text style={{ fontSize: 12 }}>
-                                        Cert No: {item.cert_no}
-                                    </Text>
+                                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end" }}>
+                                    <View style={{ flexDirection: "row", alignItems: "center", paddingTop: 16, borderRadius: 2 }}>
+                                        <Pressable
+                                            onPress={() => bookJobPressHandler(item.group_id, item.id)}
+                                            style={({ pressed }) => [
+                                                { padding: 8, borderRadius: 4 },
+                                                pressed && { backgroundColor: Colors.ripple }
+                                            ]}
+                                        >
+                                            <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                Book
+                                            </Text>
+                                        </Pressable>
+                                        <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
+                                        <Pressable
+                                            onPress={() => jobDetailsNavigateHandler(item.group_id, item.id)}
+                                            style={({ pressed }) => [
+                                                { padding: 8, borderRadius: 4 },
+                                                pressed && { backgroundColor: Colors.ripple }
+                                            ]}
+                                        >
+                                            <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
+                                                Job Details
+                                            </Text>
+                                        </Pressable>
+
+                                    </View>
                                 </View>
                             </View>
                         </JobList>
@@ -187,7 +207,7 @@ const styles = StyleSheet.create({
         height: 60,
         width: 60,
         borderRadius: 30,
-        marginLeft: 16,
+        marginLeft: 8,
     },
     clientName: {
         fontWeight: "bold",

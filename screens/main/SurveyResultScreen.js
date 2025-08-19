@@ -4,11 +4,10 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 
 import ScreenWrapper from "../../components/ScreenWrapper";
 import ConfigrationGrid from "../../components/ConfigurationGrid";
-import { getJobMeasures } from "../../util/db/jobMeasures";
+import { getJobMeasuresDetails } from "../../util/db/jobMeasures";
 import { fetchDataFromDB } from "../../util/database";
 import Colors from "../../constants/Colors";
 import { getCompletedJobSurveyResults } from "../../util/db/completedJobs";
-import ScreenTitle from "../../components/ScreenTitle";
 
 function SurveyResultScreen() {
     const navigation = useNavigation();
@@ -18,7 +17,8 @@ function SurveyResultScreen() {
     const [surveyResults, setSurveyResults] = useState([]);
     const flatListRef = useRef(null);
 
-    const { jobNumber, jobId } = route.params || {};
+    const { jobNumber, jobID } = route.params || {};
+
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -27,7 +27,7 @@ function SurveyResultScreen() {
     }, [navigation]);
 
     useEffect(() => {
-        const getJobMeasuresQuery = getJobMeasures();
+        const getJobMeasuresQuery = getJobMeasuresDetails();
 
         const fetchJobMeasures = async () => {
             await fetchDataFromDB(getJobMeasuresQuery, [`%${jobNumber}%`])

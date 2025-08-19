@@ -4,7 +4,7 @@ import Colors from "../constants/Colors";
 function JobList({ onPress, children }) {
     return (
         <View style={styles.row}>
-            <Pressable
+            {/* <Pressable
                 onPress={onPress}
                 android_ripple={{ color: Colors.ripple }}
                 style={({ pressed }) =>
@@ -12,9 +12,11 @@ function JobList({ onPress, children }) {
                         ? [styles.pressedItem, styles.button]
                         : styles.button
                 }
-            >
+            > */}
+            <View style={styles.button} >
                 {children}
-            </Pressable>
+            </View>
+            {/* </Pressable> */}
         </View>
     );
 }
