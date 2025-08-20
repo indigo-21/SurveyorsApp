@@ -1,17 +1,24 @@
 import { useCallback, useContext, useEffect, useState, useMemo } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Agenda } from "react-native-calendars";
-import { format, eachDayOfInterval } from "date-fns";
+import { 
+    View, 
+    Text, 
+    StyleSheet, 
+    TouchableOpacity, 
+    FlatList,
+    Dimensions 
+} from "react-native";
+import { format, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { fetchDataFromDB } from "../../util/database";
 import { getScheduleJobs } from "../../util/db/jobs";
 import { AuthContext } from "../../store/auth-context";
 import Colors from "../../constants/Colors";
 import ErrorBoundary from "../../components/ErrorBoundary";
 
-function CalendarScreen() {
-    const dateToday = format(new Date(), "yyyy-MM-dd");
-    const authContext = useContext(AuthContext);
+const windowWidth = Dimensions.get('window').width;
 
+function CalendarScreen() {
+    const authContext = useContext(AuthContext);
+    
     // Add null checks to prevent crashes
     if (!authContext?.propertyInspector?.user?.property_inspector?.id) {
         return (
@@ -24,167 +31,173 @@ function CalendarScreen() {
     const propertyInspector = authContext.propertyInspector;
     const propertyInspectorID = propertyInspector.user.property_inspector.id;
 
-    const [items, setItems] = useState({});
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [jobs, setJobs] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Memoize the propertyInspectorID to prevent unnecessary effect runs
-    const memoizedPropertyInspectorID = useMemo(() => propertyInspectorID, [propertyInspectorID]);
+    // Memoize the property inspector ID to prevent unnecessary re-renders
+    const stablePropertyInspectorID = useMemo(() => propertyInspectorID, [propertyInspectorID]);
 
-    const fetchScheduledJobs = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            console.log('Fetching jobs for propertyInspectorID:', memoizedPropertyInspectorID);
-            
-            const result = await fetchDataFromDB(getScheduleJobs(), [
-                memoizedPropertyInspectorID,
-            ]);
-            
-            console.log('Jobs fetched:', result?.length || 0);
-
-            const newItems = {};
-
-            const today = new Date();
-            const dateRange = eachDayOfInterval({
-                start: new Date(
-                    today.getFullYear(),
-                    today.getMonth(),
-                    today.getDate() - 7,
-                ),
-                end: new Date(
-                    today.getFullYear(),
-                    today.getMonth(),
-                    today.getDate() + 8,
-                ),
-            });
-
-            dateRange.forEach((date) => {
-                const dateKey = format(date, "yyyy-MM-dd");
-                newItems[dateKey] = [];
-            });
-
-            // Fill in scheduled jobs with safe property access
-            if (Array.isArray(result)) {
-                result.forEach((job) => {
-                    try {
-                        if (!job || !job.schedule_date) {
-                            console.warn('Invalid job data:', job);
-                            return;
-                        }
-
-                        const scheduleDate = new Date(job.schedule_date);
-                        if (isNaN(scheduleDate.getTime())) {
-                            console.warn('Invalid date in job:', job.schedule_date);
-                            return;
-                        }
-
-                        const dateKey = format(scheduleDate, "yyyy-MM-dd");
-                        
-                        if (!newItems[dateKey]) {
-                            newItems[dateKey] = [];
-                        }
-                        
-                        newItems[dateKey].push({
-                            id: `${job.group_id}-${dateKey}-${newItems[dateKey].length}`, // Stable ID based on position
-                            name: job.group_id || 'N/A',
-                            customer_name: job.customer_name || 'Unknown Customer',
-                            client_abbrevation: job.client_abbrevation || '',
-                            address: (job.house_flat_prefix || '') + " " + (job.address1 || ''),
-                            description: job.description || 'No Description',
-                        });
-                    } catch (jobError) {
-                        console.error('Error processing individual job:', jobError);
-                    }
-                });
-            }
-
-            console.log('Calendar items prepared:', Object.keys(newItems).length, 'dates');
-            setItems(newItems);
-        } catch (error) {
-            console.error("Error fetching scheduled jobs:", error);
-            setError('Failed to load calendar data');
-            
-            // Fallback empty calendar
-            const today = new Date();
-            const dateRange = eachDayOfInterval({
-                start: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7),
-                end: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 8),
-            });
-            
-            const fallbackItems = {};
-            dateRange.forEach((date) => {
-                const dateKey = format(date, "yyyy-MM-dd");
-                fallbackItems[dateKey] = [];
-            });
-            
-            setItems(fallbackItems);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [memoizedPropertyInspectorID]);
-
+    // Fetch jobs data
     useEffect(() => {
-        fetchScheduledJobs();
-    }, [fetchScheduledJobs]);
-
-    const renderEmptyDate = useCallback(() => <View style={styles.hr} />, []);
-
-    const renderItem = useCallback(
-        (item) => {
-            // Add safety checks for item properties
-            if (!item) {
-                return <View style={styles.emptyItem} />;
+        let isMounted = true;
+        
+        const fetchJobs = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                
+                const result = await fetchDataFromDB(getScheduleJobs(), [stablePropertyInspectorID]);
+                
+                if (!isMounted) return;
+                
+                const jobsByDate = {};
+                
+                if (Array.isArray(result)) {
+                    result.forEach((job) => {
+                        if (job?.schedule_date) {
+                            const scheduleDate = new Date(job.schedule_date);
+                            if (!isNaN(scheduleDate.getTime())) {
+                                const dateKey = format(scheduleDate, "yyyy-MM-dd");
+                                
+                                if (!jobsByDate[dateKey]) {
+                                    jobsByDate[dateKey] = [];
+                                }
+                                
+                                jobsByDate[dateKey].push({
+                                    id: `${job.group_id || 'unknown'}-${dateKey}`,
+                                    name: job.group_id || 'N/A',
+                                    customer_name: job.customer_name || 'Unknown Customer',
+                                    client_abbrevation: job.client_abbrevation || 'AES',
+                                    address: `${job.house_flat_prefix || ''} ${job.address1 || ''}`.trim(),
+                                    description: job.description || 'No Description',
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                setJobs(jobsByDate);
+            } catch (error) {
+                console.error("Error fetching jobs:", error);
+                if (isMounted) {
+                    setError('Failed to load calendar data');
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
+        };
 
-            return (
-                <View style={styles.item}>
-                    <View
-                        style={{
-                            justifyContent: "space-between",
-                            flexDirection: "row",
-                        }}
-                    >
-                        <View style={{ flex: 1, flexDirection: "column" }}>
-                            <Text style={{ fontSize: 14, marginBottom: 8 }}>
-                                {item.name || 'N/A'}
-                            </Text>
-                            <Text style={{ fontSize: 18, marginBottom: 8 }}>
-                                {item.customer_name || 'Unknown Customer'}
-                            </Text>
-                            <Text style={{ fontSize: 14 }}>
-                                {item.address || 'No Address'}
-                            </Text>
-                            <Text
-                                style={{
-                                    backgroundColor: Colors.success,
-                                    color: Colors.white,
-                                    paddingVertical: 4,
-                                    paddingHorizontal: 8,
-                                    borderRadius: 20,
-                                    alignSelf: "flex-start",
-                                    overflow: "hidden",
-                                    marginTop: 8,
-                                }}
-                            >
-                                {item.description || 'No Description'}
-                            </Text>
-                        </View>
-                        <View style={styles.clientRow}>
-                            <Text style={styles.clientName}>
-                                {item.client_abbrevation || 'AES'}
-                            </Text>
-                        </View>
+        fetchJobs();
+        
+        return () => {
+            isMounted = false;
+        };
+    }, [stablePropertyInspectorID]);
+
+    // Generate calendar days organized by weeks
+    const calendarWeeks = useMemo(() => {
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+        
+        // Get the start and end of the calendar view (including previous/next month days)
+        const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 }); // Sunday = 0
+        const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+        
+        const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+        
+        // Organize days into weeks (arrays of 7 days each)
+        const weeks = [];
+        for (let i = 0; i < days.length; i += 7) {
+            weeks.push(days.slice(i, i + 7));
+        }
+        
+        console.log('Calendar weeks generated:', weeks.length);
+        console.log('Days per week:', weeks.map(week => week.length));
+        
+        return weeks;
+    }, [currentDate]);
+
+    // Get jobs for selected date
+    const selectedDateJobs = useMemo(() => {
+        const dateKey = format(selectedDate, "yyyy-MM-dd");
+        return jobs[dateKey] || [];
+    }, [jobs, selectedDate]);
+
+    // Navigation handlers
+    const goToPreviousMonth = useCallback(() => {
+        setCurrentDate(prev => subMonths(prev, 1));
+    }, []);
+
+    const goToNextMonth = useCallback(() => {
+        setCurrentDate(prev => addMonths(prev, 1));
+    }, []);
+
+    // Date selection handler
+    const handleDatePress = useCallback((date) => {
+        setSelectedDate(date);
+    }, []);
+
+    // Render individual job item
+    const renderJobItem = useCallback(({ item }) => (
+        <View style={styles.jobItem}>
+            <View style={styles.jobContent}>
+                <View style={styles.jobInfo}>
+                    <Text style={styles.jobName}>{item.name}</Text>
+                    <Text style={styles.customerName}>{item.customer_name}</Text>
+                    <Text style={styles.jobAddress}>{item.address}</Text>
+                    <View style={styles.descriptionContainer}>
+                        <Text style={styles.jobDescription}>{item.description}</Text>
                     </View>
                 </View>
-            );
-        },
-        [],
-    );
+                <View style={styles.clientBadge}>
+                    <Text style={styles.clientText}>{item.client_abbrevation}</Text>
+                </View>
+            </View>
+        </View>
+    ), []);
+
+    // Render calendar day
+    const renderCalendarDay = useCallback((day) => {
+        const dateKey = format(day, "yyyy-MM-dd");
+        const hasJobs = jobs[dateKey] && jobs[dateKey].length > 0;
+        const isSelected = isSameDay(day, selectedDate);
+        const isToday = isSameDay(day, new Date());
+        
+        // Check if day is in current month
+        const isCurrentMonth = format(day, 'MM') === format(currentDate, 'MM');
+
+        return (
+            <TouchableOpacity
+                key={dateKey}
+                style={[
+                    styles.calendarDay,
+                    isSelected && styles.selectedDay,
+                    isToday && styles.todayDay,
+                    !isCurrentMonth && styles.otherMonthDay
+                ]}
+                onPress={() => handleDatePress(day)}
+            >
+                <Text style={[
+                    styles.dayText,
+                    isSelected && styles.selectedDayText,
+                    isToday && styles.todayText,
+                    !isCurrentMonth && styles.otherMonthText
+                ]}>
+                    {format(day, 'd')}
+                </Text>
+                {hasJobs && isCurrentMonth && <View style={styles.jobIndicator} />}
+            </TouchableOpacity>
+        );
+    }, [jobs, selectedDate, handleDatePress, currentDate]);
 
     if (isLoading) {
         return (
-            <View style={styles.loadingContainer}>
+            <View style={styles.centerContainer}>
                 <Text>Loading calendar...</Text>
             </View>
         );
@@ -192,7 +205,7 @@ function CalendarScreen() {
 
     if (error) {
         return (
-            <View style={styles.errorContainer}>
+            <View style={styles.centerContainer}>
                 <Text style={styles.errorText}>Error: {error}</Text>
                 <Text style={styles.errorSubText}>Please try again later</Text>
             </View>
@@ -200,112 +213,272 @@ function CalendarScreen() {
     }
 
     return (
-        <Agenda
-            items={items}
-            selected={dateToday}
-            pastScrollRange={10}
-            futureScrollRange={10}
-            renderItem={renderItem}
-            renderEmptyDate={renderEmptyDate}
-            renderEmptyData={renderEmptyDate}
-            rowHasChanged={(r1, r2) => {
-                // Safer comparison to prevent infinite loops
-                if (!r1 && !r2) return false;
-                if (!r1 || !r2) return true;
-                return r1.id !== r2.id;
-            }}
-            showOnlySelectedDayItems={false}
-            theme={{
-                agendaTodayColor: Colors.primary,
-                agendaKnobColor: Colors.primary,
-                todayBackgroundColor: Colors.primary,
-                todayTextColor: "white",
-                agendaDayTextColor: Colors.primary,
-                agendaDayNumColor: Colors.primary,
-                agendaTodayColor: Colors.primary,
-                agendaKnobColor: Colors.primary,
-                selectedDayBackgroundColor: Colors.primary,
-                dotColor: Colors.primary,
-            }}
-        />
+        <View style={styles.container}>
+            {/* Month Header */}
+            <View style={styles.monthHeader}>
+                <TouchableOpacity onPress={goToPreviousMonth} style={styles.monthButton}>
+                    <Text style={styles.monthButtonText}>‹</Text>
+                </TouchableOpacity>
+                <Text style={styles.monthTitle}>
+                    {format(currentDate, 'MMMM yyyy')}
+                </Text>
+                <TouchableOpacity onPress={goToNextMonth} style={styles.monthButton}>
+                    <Text style={styles.monthButtonText}>›</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Week Days Header */}
+            <View style={styles.weekDaysContainer}>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <View key={day} style={styles.weekDayHeader}>
+                        <Text style={styles.weekDayText}>{day}</Text>
+                    </View>
+                ))}
+            </View>
+
+            {/* Calendar Grid */}
+            <View style={styles.calendarContainer}>
+                {calendarWeeks.map((week, weekIndex) => (
+                    <View key={weekIndex} style={styles.weekRow}>
+                        {week.map((day) => renderCalendarDay(day))}
+                    </View>
+                ))}
+            </View>
+
+            {/* Selected Date Jobs */}
+            <View style={styles.jobsContainer}>
+                <Text style={styles.jobsTitle}>
+                    Jobs for {format(selectedDate, 'MMM dd, yyyy')}
+                </Text>
+                
+                {selectedDateJobs.length > 0 ? (
+                    <FlatList
+                        data={selectedDateJobs}
+                        renderItem={renderJobItem}
+                        keyExtractor={(item) => item.id}
+                        showsVerticalScrollIndicator={false}
+                        style={styles.jobsList}
+                    />
+                ) : (
+                    <View style={styles.noJobsContainer}>
+                        <Text style={styles.noJobsText}>No jobs scheduled for this date</Text>
+                    </View>
+                )}
+            </View>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    item: {
-        backgroundColor: "white",
-        padding: 20,
-        marginRight: 10,
-        marginTop: 8,
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    monthHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: Colors.primary,
+    },
+    monthButton: {
+        padding: 10,
+    },
+    monthButtonText: {
+        fontSize: 24,
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    monthTitle: {
+        fontSize: 18,
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    weekDaysContainer: {
+        flexDirection: 'row',
+        backgroundColor: 'white',
+        paddingVertical: 10,
+    },
+    weekDayHeader: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    weekDayText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: Colors.primary,
+    },
+    calendarContainer: {
+        backgroundColor: 'white',
+        paddingHorizontal: 5,
+        paddingBottom: 10,
+    },
+    weekRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    calendarGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        backgroundColor: 'white',
+        paddingHorizontal: 5,
+        paddingBottom: 10,
+    },
+    calendarDay: {
+        flex: 1,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    selectedDay: {
+        backgroundColor: Colors.primary,
+        borderRadius: 25,
+    },
+    todayDay: {
+        backgroundColor: Colors.secondary,
+        borderRadius: 25,
+    },
+    otherMonthDay: {
+        opacity: 0.3,
+    },
+    dayText: {
+        fontSize: 16,
+        color: Colors.black,
+    },
+    selectedDayText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    todayText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    otherMonthText: {
+        color: Colors.gray,
+    },
+    jobIndicator: {
+        position: 'absolute',
+        bottom: 5,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: Colors.success,
+    },
+    jobsContainer: {
+        flex: 1,
+        backgroundColor: 'white',
+        marginTop: 10,
+        paddingHorizontal: 15,
+        paddingTop: 15,
+    },
+    jobsTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: Colors.primary,
+        marginBottom: 15,
+    },
+    jobsList: {
+        flex: 1,
+    },
+    jobItem: {
+        backgroundColor: 'white',
+        padding: 15,
         marginBottom: 10,
-        borderRadius: 5,
+        borderRadius: 8,
         elevation: 2,
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.1,
         shadowRadius: 3.84,
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 5,
+        borderLeftWidth: 4,
+        borderLeftColor: Colors.primary,
     },
-    emptyDate: {
-        padding: 20,
-        marginTop: 17,
-        backgroundColor: "#f0f0f0",
-        borderRadius: 5,
+    jobContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
-    hr: {
-        height: 1,
-        backgroundColor: "#e1e1e1",
-        marginVertical: 16,
-    },
-    clientRow: {
-        fontSize: 16,
-        alignContent: "center",
-        justifyContent: "center",
-        backgroundColor: Colors.primary,
-        height: 60,
-        width: 60,
-        borderRadius: 30,
-        marginLeft: 16,
-    },
-    clientName: {
-        fontWeight: "bold",
-        color: Colors.white,
-        textAlign: "center",
-        fontSize: 18,
-    },
-    loadingContainer: {
+    jobInfo: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+    },
+    jobName: {
+        fontSize: 14,
+        color: Colors.gray,
+        marginBottom: 4,
+    },
+    customerName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: Colors.black,
+        marginBottom: 4,
+    },
+    jobAddress: {
+        fontSize: 14,
+        color: Colors.gray,
+        marginBottom: 8,
+    },
+    descriptionContainer: {
+        backgroundColor: Colors.success,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderRadius: 12,
+        alignSelf: 'flex-start',
+    },
+    jobDescription: {
+        fontSize: 12,
+        color: 'white',
+    },
+    clientBadge: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: Colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 15,
+    },
+    clientText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    noJobsContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 50,
+    },
+    noJobsText: {
+        fontSize: 16,
+        color: Colors.gray,
+        textAlign: 'center',
+    },
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
         padding: 20,
     },
     errorContainer: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: 'center',
+        alignItems: 'center',
         padding: 20,
     },
     errorText: {
         fontSize: 16,
-        color: "#ff0000",
+        color: '#ff0000',
         marginBottom: 10,
-        textAlign: "center",
+        textAlign: 'center',
     },
     errorSubText: {
         fontSize: 14,
-        color: "#666",
-        textAlign: "center",
-    },
-    emptyItem: {
-        height: 50,
-        backgroundColor: "#f5f5f5",
-        borderRadius: 5,
-        marginVertical: 5,
+        color: '#666',
+        textAlign: 'center',
     },
 });
 

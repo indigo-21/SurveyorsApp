@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		60D9BD44F3B9914F46CAE8B5 /* libPods-AMISurveyorsApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9500A54BEE21ADC830BCE99B /* libPods-AMISurveyorsApp.a */; };
-		9E37357EF1441064F5FCD787 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7853408A31FC85D9DC725C4F /* PrivacyInfo.xcprivacy */; };
+		A0A5B1F0814FE315475EB3B9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 37A610114B05EAB0F8C7EADE /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D765CF521AC0A2273CE84DB3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3168B1869A3E9BD31821AF8 /* ExpoModulesProvider.swift */; };
+		BCEA89D388D105C3286159EC /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBD16E984A5611119DAA3CB /* ExpoModulesProvider.swift */; };
+		C8338E597FD1BEEA1FA808E4 /* libPods-AMISurveyorsApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA3658247BDE2713C850C5C /* libPods-AMISurveyorsApp.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,13 +20,13 @@
 		13B07F961A680F5B00A75B9A /* AMISurveyorsApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AMISurveyorsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AMISurveyorsApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AMISurveyorsApp/Info.plist; sourceTree = "<group>"; };
-		3E6C094ABE41070B81883412 /* Pods-AMISurveyorsApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AMISurveyorsApp.release.xcconfig"; path = "Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp.release.xcconfig"; sourceTree = "<group>"; };
-		7853408A31FC85D9DC725C4F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = AMISurveyorsApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		9500A54BEE21ADC830BCE99B /* libPods-AMISurveyorsApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AMISurveyorsApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9E33E7A64475C7D86597D990 /* Pods-AMISurveyorsApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AMISurveyorsApp.debug.xcconfig"; path = "Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp.debug.xcconfig"; sourceTree = "<group>"; };
+		37A610114B05EAB0F8C7EADE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = AMISurveyorsApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		4BA3658247BDE2713C850C5C /* libPods-AMISurveyorsApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AMISurveyorsApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5EBD16E984A5611119DAA3CB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AMISurveyorsApp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = AMISurveyorsApp/SplashScreen.storyboard; sourceTree = "<group>"; };
+		AE4D69374A7AA9A3900B93B9 /* Pods-AMISurveyorsApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AMISurveyorsApp.release.xcconfig"; path = "Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp.release.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C3168B1869A3E9BD31821AF8 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AMISurveyorsApp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		D5153F82F741E8B6D3091C72 /* Pods-AMISurveyorsApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AMISurveyorsApp.debug.xcconfig"; path = "Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AMISurveyorsApp/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* AMISurveyorsApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AMISurveyorsApp-Bridging-Header.h"; path = "AMISurveyorsApp/AMISurveyorsApp-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				60D9BD44F3B9914F46CAE8B5 /* libPods-AMISurveyorsApp.a in Frameworks */,
+				C8338E597FD1BEEA1FA808E4 /* libPods-AMISurveyorsApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				7853408A31FC85D9DC725C4F /* PrivacyInfo.xcprivacy */,
+				37A610114B05EAB0F8C7EADE /* PrivacyInfo.xcprivacy */,
 			);
 			name = AMISurveyorsApp;
 			sourceTree = "<group>";
@@ -62,27 +62,17 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				9500A54BEE21ADC830BCE99B /* libPods-AMISurveyorsApp.a */,
+				4BA3658247BDE2713C850C5C /* libPods-AMISurveyorsApp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		3F016B50F5DB9329DC5EADF3 /* Pods */ = {
+		425F1A2D3DFDF9B51A194A65 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				9E33E7A64475C7D86597D990 /* Pods-AMISurveyorsApp.debug.xcconfig */,
-				3E6C094ABE41070B81883412 /* Pods-AMISurveyorsApp.release.xcconfig */,
+				EF6393AC0C9446EC580C1FB4 /* AMISurveyorsApp */,
 			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		658E55887FAB6BC0C445DD2E /* AMISurveyorsApp */ = {
-			isa = PBXGroup;
-			children = (
-				C3168B1869A3E9BD31821AF8 /* ExpoModulesProvider.swift */,
-			);
-			name = AMISurveyorsApp;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -99,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				3F016B50F5DB9329DC5EADF3 /* Pods */,
-				9FCC64649A6B81F0F363F257 /* ExpoModulesProviders */,
+				8F0C1FDC70CAA217B894B678 /* Pods */,
+				425F1A2D3DFDF9B51A194A65 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,12 +105,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		9FCC64649A6B81F0F363F257 /* ExpoModulesProviders */ = {
+		8F0C1FDC70CAA217B894B678 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				658E55887FAB6BC0C445DD2E /* AMISurveyorsApp */,
+				D5153F82F741E8B6D3091C72 /* Pods-AMISurveyorsApp.debug.xcconfig */,
+				AE4D69374A7AA9A3900B93B9 /* Pods-AMISurveyorsApp.release.xcconfig */,
 			);
-			name = ExpoModulesProviders;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -132,6 +124,14 @@
 			path = AMISurveyorsApp/Supporting;
 			sourceTree = "<group>";
 		};
+		EF6393AC0C9446EC580C1FB4 /* AMISurveyorsApp */ = {
+			isa = PBXGroup;
+			children = (
+				5EBD16E984A5611119DAA3CB /* ExpoModulesProvider.swift */,
+			);
+			name = AMISurveyorsApp;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AMISurveyorsApp" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				6AE7AFA4617E6DC78EE39218 /* [Expo] Configure project */,
+				E1E7D5D7D45E07F03BBF4D85 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				E1F01A0123FE0DEBABD1C0E3 /* [CP] Embed Pods Frameworks */,
+				69029421E444A40F4015A0C5 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				9E37357EF1441064F5FCD787 /* PrivacyInfo.xcprivacy in Resources */,
+				A0A5B1F0814FE315475EB3B9 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,24 +240,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6AE7AFA4617E6DC78EE39218 /* [Expo] Configure project */ = {
+		69029421E444A40F4015A0C5 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-AMISurveyorsApp/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -293,23 +292,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E1F01A0123FE0DEBABD1C0E3 /* [CP] Embed Pods Frameworks */ = {
+		E1E7D5D7D45E07F03BBF4D85 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AMISurveyorsApp/Pods-AMISurveyorsApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-AMISurveyorsApp/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -319,7 +319,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				D765CF521AC0A2273CE84DB3 /* ExpoModulesProvider.swift in Sources */,
+				BCEA89D388D105C3286159EC /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,7 +328,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9E33E7A64475C7D86597D990 /* Pods-AMISurveyorsApp.debug.xcconfig */;
+			baseConfigurationReference = D5153F82F741E8B6D3091C72 /* Pods-AMISurveyorsApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -364,7 +364,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3E6C094ABE41070B81883412 /* Pods-AMISurveyorsApp.release.xcconfig */;
+			baseConfigurationReference = AE4D69374A7AA9A3900B93B9 /* Pods-AMISurveyorsApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

@@ -16,7 +16,7 @@ const jobParams = `
     deadline TEXT NOT NULL,
     first_visit_by TEXT NOT NULL,
     rework_deadline TEXT,
-    invoice_status TEXT,
+    invoice_status_id TEXT,
     property_inspector_id INTEGER,
     schedule_date TEXT,
     close_date TEXT,
@@ -209,6 +209,7 @@ export const getJobSummary = () => {
 export const updateCompletedJobs = () => {
     return `UPDATE jobs
             SET job_status_id = ?,
+                invoice_status_id = ?,
                 last_update = ?,
                 close_date = ?,
                 job_remediation_type = ?,

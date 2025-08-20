@@ -18,9 +18,21 @@ const windowHeight = Dimensions.get('window').height;
 function ProfileScreen() {
     const authContext = useContext(AuthContext);
     const [url, setUrl] = useState('');
-    
+    const [imageError, setImageError] = useState(false);
+
     const propertyInspector = authContext.propertyInspector;
     const user = propertyInspector.user;
+
+    // Generate dynamic profile image URL or use a default
+    const getProfileImageUrl = () => {
+        if (user.photo) {
+            return `${url}/storage/profile_images/${user.photo}`;
+        }
+        // Fallback to a default avatar or placeholder
+        return null;
+    };
+
+    const profileImageUrl = getProfileImageUrl();
 
     useEffect(() => {
         const getUrl = async () => {
@@ -31,6 +43,7 @@ function ProfileScreen() {
             }
         };
         getUrl();
+        console.log('Profile image URL:', profileImageUrl);
     }, []);
 
     const InfoCard = ({ title, value, icon }) => (
@@ -49,12 +62,19 @@ function ProfileScreen() {
                 {/* Profile Header */}
                 <View style={styles.profileHeader}>
                     <View style={styles.profileImageContainer}>
-                        <Image
-                            style={styles.profileImage}
-                            source={{
-                                uri: `${url}storage/profile_images/${user.photo}`,
-                            }}
-                        />
+                        {profileImageUrl ? (
+                            <Image
+                                style={styles.profileImage}
+                                source={{ uri: profileImageUrl }}
+                                onError={() => setImageError(true)}
+                            />
+                        ) : (
+                            <View style={[styles.profileImage, styles.defaultAvatar]}>
+                                <Text style={styles.avatarText}>
+                                    {user.firstname?.charAt(0)?.toUpperCase()}{user.lastname?.charAt(0)?.toUpperCase()}
+                                </Text>
+                            </View>
+                        )}
                     </View>
                     <Text style={styles.profileName}>
                         {user.firstname} {user.lastname}
@@ -67,19 +87,19 @@ function ProfileScreen() {
                 {/* Personal Information */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Personal Information</Text>
-                    
+
                     <InfoCard
                         title="Full Name"
                         value={`${user.firstname} ${user.lastname}`}
                         icon="👤"
                     />
-                    
+
                     <InfoCard
                         title="Email Address"
                         value={user.email}
                         icon="📧"
                     />
-                    
+
                     <InfoCard
                         title="Phone Number"
                         value={user.mobile}
@@ -90,13 +110,13 @@ function ProfileScreen() {
                 {/* Professional Information */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Professional Information</Text>
-                    
+
                     <InfoCard
                         title="Account Level"
                         value={user.account_level?.name}
                         icon="🏆"
                     />
-                    
+
                     <InfoCard
                         title="Can Book Jobs"
                         value={user.property_inspector?.can_book_jobs ? 'Yes' : 'No'}
@@ -107,19 +127,19 @@ function ProfileScreen() {
                 {/* Account Status */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account Status</Text>
-                    
+
                     <InfoCard
                         title="Account Status"
                         value={user.property_inspector.is_active === 1 ? 'Active' : 'Inactive'}
                         icon={user.property_inspector.is_active === 1 ? '✅' : '❌'}
                     />
-                    
+
                     <InfoCard
                         title="OTP Verified"
                         value={user.otp_verified_at ? 'Verified' : 'Not Verified'}
                         icon={user.otp_verified_at ? '✅' : '⏳'}
                     />
-                    
+
                     {user.created_at && (
                         <InfoCard
                             title="Member Since"
@@ -160,6 +180,16 @@ const styles = StyleSheet.create({
         borderRadius: (windowWidth * 0.25) / 2,
         borderWidth: 4,
         borderColor: Colors.white,
+    },
+    defaultAvatar: {
+        backgroundColor: Colors.white,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarText: {
+        fontSize: windowWidth * 0.08,
+        fontWeight: 'bold',
+        color: Colors.primary,
     },
     profileName: {
         fontSize: windowWidth > 500 ? 28 : 24,

@@ -413,7 +413,7 @@ function CurrentVisitScreen() {
                                                 <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
                                                 <Pressable
                                                     onPress={() => {
-                                                        navigation.navigate("Survey", {
+                                                        navigation.navigate("JobDetails", {
                                                             jobID: item.id,
                                                             jobNumber: item.group_id,
                                                         });
@@ -424,7 +424,7 @@ function CurrentVisitScreen() {
                                                     ]}
                                                 >
                                                     <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
-                                                        Start Survey
+                                                        Review
                                                     </Text>
                                                 </Pressable>
                                             </>

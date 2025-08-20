@@ -156,6 +156,7 @@ function SummaryScreen() {
 
             let jobRemediationType = "";
             let jobStatus = 3;
+            let invoiceStatus = 1;
             let reinspectRemediation = dateToday;
 
             if (getSurveyResult.length !== 0) {
@@ -170,6 +171,7 @@ function SummaryScreen() {
 
                 jobRemediationType = "NC";
                 jobStatus = 16;
+                invoiceStatus = null;
 
                 let remediationTime, durationUnit;
 
@@ -195,6 +197,7 @@ function SummaryScreen() {
 
             const updateCompletedJobsParams = [
                 jobStatus,
+                invoiceStatus,
                 dateToday,
                 jobRemediationType === "" ? dateToday : null,
                 jobRemediationType,

@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#bbbaba",
         borderRadius: 5,
+        color: Colors.black,
     },
     loginText: {
         color: Colors.text,

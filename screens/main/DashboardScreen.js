@@ -51,6 +51,7 @@ function DashboardScreen() {
     const [isInitializing, setIsInitializing] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [canBookJobs, setCanBookJobs] = useState(0);
+    const [imageError, setImageError] = useState(false);
 
     const isFocused = useIsFocused();
     const navigation = useNavigation();
@@ -60,6 +61,18 @@ function DashboardScreen() {
     const propertyInspector = authContext.propertyInspector;
     const userID = propertyInspector.user.id;
     const propertyInspectorID = propertyInspector.user.property_inspector.id;
+
+    // Generate dynamic profile image URL or use a default
+    const getProfileImageUrl = () => {
+        if (!url) return null; // URL not loaded yet
+
+        if (propertyInspector.user.photo) {
+            return `${url}/storage/profile_images/${propertyInspector.user.photo}`;
+        }
+        return null;
+    };
+
+    const profileImageUrl = getProfileImageUrl();
 
     const pressLogoutHandler = async () => {
         setIsLoggingOut(true);
@@ -190,17 +203,6 @@ function DashboardScreen() {
             fetchData();
         }
 
-        const getPropertyInspectorData = async () => {
-            try {
-                const propertyInspectorData = await fetchFirstDataFromDB(getPropertyInspector(), propertyInspectorID);
-                setCanBookJobs(propertyInspectorData.can_book_jobs);
-            } catch (error) {
-                console.error("Error fetching property inspector data:", error);
-            }
-        }
-
-        getPropertyInspectorData();
-
     }, [isFocused, isInitialized]);
 
     useEffect(() => {
@@ -215,6 +217,16 @@ function DashboardScreen() {
         };
 
         if (isFocused && isInitialized && !isInitializing) {
+            const getPropertyInspectorData = async () => {
+                try {
+                    const propertyInspectorData = await fetchFirstDataFromDB(getPropertyInspector(), propertyInspectorID);
+                    setCanBookJobs(propertyInspectorData.can_book_jobs);
+                } catch (error) {
+                    console.error("Error fetching property inspector data:", error);
+                }
+            }
+
+            getPropertyInspectorData();
             fetchLogs();
         }
 
@@ -294,12 +306,20 @@ function DashboardScreen() {
                 </View>
             </CustomModal>
             <View style={styles.userContainer}>
-                <Image
-                    style={styles.image}
-                    source={{
-                        uri: `${url}storage/profile_images/${propertyInspector.user.photo}`,
-                    }}
-                />
+                {profileImageUrl ? (
+                    <Image
+                        style={styles.image}
+                        source={{ uri: profileImageUrl }}
+                        onError={() => setImageError(true)}
+                    />
+                ) : (
+                    <View style={[styles.image, styles.defaultAvatar]}>
+                        <Text style={styles.avatarText}>
+                            {propertyInspector.user.firstname?.charAt(0)?.toUpperCase()}
+                            {propertyInspector.user.lastname?.charAt(0)?.toUpperCase()}
+                        </Text>
+                    </View>
+                )}
                 <View style={{ flex: 5, justifyContent: "center" }}>
                     <Text
                         style={{
@@ -531,6 +551,15 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         backgroundColor: Colors.white,
         objectFit: "cover",
+    },
+    defaultAvatar: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarText: {
+        fontSize: windowHeight * 0.02,
+        fontWeight: 'bold',
+        color: Colors.primary,
     },
 });
 
