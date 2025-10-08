@@ -1,65 +1,61 @@
 {
-  "expo": {
-    "name": "AMI SurveyorsApp",
-    "slug": "surveyors-app",
-    "version": "2.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash2.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fff"
-    },
-    "ios": {
-      "buildNumber": "2.0.0",
-      "supportsTablet": true,
-      "orientation": "portrait",
-      "bundleIdentifier": "com.anonymous.AMISurveyorsApp"
-    },
-    "android": {
-      "versionCode": 2,
-      "icon": "./assets/icon.png",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.AMISurveyorsApp",
-      "orientation": "portrait",
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow Agility Eco to access your camera",
-          "microphonePermission": "Allow Agility Eco to access your microphone",
-          "recordAudioAndroid": true
+    "expo": {
+        "name": "AMI SurveyorsApp",
+        "slug": "surveyors-app",
+        "version": "2.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "newArchEnabled": true,
+        "splash": {
+            "image": "./assets/images/splash2.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "ios": {
+            "buildNumber": "2.0.0",
+            "supportsTablet": true,
+            "bundleIdentifier": "com.anonymous.AMISurveyorsApp"
+        },
+        "android": {
+            "versionCode": 2,
+            "icon": "./assets/icon.png",
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "edgeToEdgeEnabled": true,
+            "package": "com.anonymous.AMISurveyorsApp",
+            "permissions": [
+                "android.permission.CAMERA",
+                "android.permission.RECORD_AUDIO"
+            ]
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": [
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Allow Agility Eco to access your camera",
+                    "microphonePermission": "Allow Agility Eco to access your microphone",
+                    "recordAudioAndroid": true
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "The app accesses your photos to let you upload images",
+                    "cameraPermission": "Allow Agility Eco to access your camera"
+                }
+            ],
+            "expo-sqlite",
+            "expo-file-system"
+        ],
+        "extra": {
+            "eas": {
+                "projectId": "90dc8def-813a-4eee-aa7b-82754d1a8b40"
+            }
         }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "The app accesses your photos to let you upload images",
-          "cameraPermission": "Allow Agility Eco to access your camera",
-          "microphonePermission": "Allow Agility Eco to access your microphone",
-          "recordAudioAndroid": true
-        }
-      ],
-      "expo-sqlite"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "90dc8def-813a-4eee-aa7b-82754d1a8b40"
-      }
     }
-  }
 }

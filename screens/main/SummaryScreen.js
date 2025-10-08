@@ -21,7 +21,7 @@ import { storeCompletedJob } from "../../util/db/completedJobs";
 import { storeCompletedJobPhoto } from "../../util/db/completedJobPhotos";
 import { getClientReinspectRemediation } from "../../util/db/clients";
 import { storeLogs } from "../../util/db/queuedSms";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+// import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 function SummaryScreen() {
     const route = useRoute();

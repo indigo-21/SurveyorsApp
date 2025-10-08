@@ -67,7 +67,7 @@ function DashboardScreen() {
         if (!url) return null; // URL not loaded yet
 
         if (propertyInspector.user.photo) {
-            return `${url}/storage/profile_images/${propertyInspector.user.photo}`;
+            return `${url}storage/profile_images/${propertyInspector.user.photo}`;
         }
         return null;
     };

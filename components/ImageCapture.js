@@ -9,6 +9,7 @@ import {
     Text,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import Colors from "../constants/Colors";
 import IconButton from "./IconButton";
 import { SurveyContext } from "../store/survey-context";
@@ -32,34 +33,65 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
     };
 
     const takeImageHandler = async () => {
+        console.log("📸 Take image handler called");
         setOptionModalVisible(false); // Close the option modal
-        const image = await ImagePicker.launchCameraAsync({
-            quality: 0.5,
-            cameraType: ImagePicker.CameraType.back,
-        });
-        console.log(image);
+        
+        try {
+            const image = await ImagePicker.launchCameraAsync({
+                quality: 0.5,
+                cameraType: ImagePicker.CameraType.back,
+                allowsEditing: false,
+                base64: false,
+            });
+            console.log("📸 Camera result:", image);
 
-        if (!image.canceled) {
-            processSelectedImage(image);
+            if (!image.canceled) {
+                console.log("📸 Image not canceled, processing...");
+                processSelectedImage(image);
+            } else {
+                console.log("❌ Image was canceled");
+            }
+        } catch (error) {
+            console.error("❌ Camera error:", error);
         }
     };
 
     const pickImageHandler = async () => {
+        console.log("🖼️ Pick image handler called");
         setOptionModalVisible(false); // Close the option modal
-        const image = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 0.5,
-            allowsEditing: false, // Disable editing
-            allowsMultipleSelection: false, // Single selection only
-        });
-        console.log(image);
+        
+        try {
+            const image = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 0.5,
+                allowsEditing: false, // Disable editing
+                base64: false,
+            });
+            console.log("🖼️ Gallery result:", image);
 
-        if (!image.canceled) {
-            processSelectedImage(image);
+            if (!image.canceled) {
+                console.log("🖼️ Image not canceled, processing...");
+                processSelectedImage(image);
+            } else {
+                console.log("❌ Image was canceled");
+            }
+        } catch (error) {
+            console.error("❌ Gallery error:", error);
         }
     };
 
-    const processSelectedImage = (image) => {
+    const processSelectedImage = async (image) => {
+        console.log("🔍 Processing image started");
+        console.log("🔍 Full image object:", JSON.stringify(image, null, 2));
+        
+        // Check if image.assets exists and has content
+        if (!image.assets || image.assets.length === 0) {
+            console.error("❌ No assets found in image object");
+            return;
+        }
+        
+        console.log("🔍 First asset:", JSON.stringify(image.assets[0], null, 2));
+        
         // Generate filename if it's null
         const generateFileName = () => {
             if (image.assets[0].fileName) {
@@ -75,35 +107,63 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
             return `image_${Date.now()}.jpg`;
         };
 
-        const newImageArray = [
-            ...imageUri,
-            {
-                uri: image.assets[0].uri,
-                fileName: generateFileName(),
-            },
-        ];
-        setImageUri(newImageArray);
+        try {
+            const fileName = generateFileName();
+            console.log("📝 Generated filename:", fileName);
+            
+            // For now, let's try without FileSystem first
+            console.log("🧪 Testing with original URI first");
+            
+            const newImageArray = [
+                ...imageUri,
+                {
+                    uri: image.assets[0].uri,
+                    fileName: fileName,
+                },
+            ];
+            
+            console.log("📷 New image array:", newImageArray);
+            setImageUri(newImageArray);
+            
+            console.log("� Calling setValueHandler...");
+            // Immediately update context after adding image
+            surveyContext.setValueHandler(
+                surveyContext.jobInfo,
+                location,
+                questionNumber,
+                ncSeverity,
+                newImageArray,
+                questionId,
+                "images"
+            );
+            console.log("✅ setValueHandler completed");
 
-        // Immediately update context after adding image
-        surveyContext.setValueHandler(
-            surveyContext.jobInfo,
-            location,
-            questionNumber,
-            ncSeverity,
-            newImageArray,
-            questionId,
-            "images",
-        );
+        } catch (err) {
+            console.error("❌ Failed to process image:", err);
+            console.error("❌ Error details:", err.message);
+            console.error("❌ Error stack:", err.stack);
+        }
     };
 
     const showImageOptions = () => {
+        console.log("📋 Show image options called");
         setOptionModalVisible(true);
     };
 
-    const deleteImageHandler = (selectedImage) => {
+    const deleteImageHandler = async (selectedImage) => {
         const removedImage = imageUri.filter(
             (img) => img.uri !== selectedImage.uri,
         );
+
+        // Remove the physical file if it's in our app directory
+        try {
+            if (selectedImage.uri.includes(FileSystem.documentDirectory)) {
+                await FileSystem.deleteAsync(selectedImage.uri);
+                console.log("Deleted file:", selectedImage.uri);
+            }
+        } catch (err) {
+            console.error("Failed to delete file:", err);
+        }
 
         // Remove the selected image from the imageUri state
         setImageUri((prev) =>
@@ -137,6 +197,7 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
                         r.questionId === questionId &&
                         r.surveyType === surveyContext.jobInfo.surveyType,
                 )?.images || [];
+        console.log("🔄 Loading images from context:", imagesFromContext);
         setImageUri(imagesFromContext);
     }, [surveyContext.surveyData, surveyContext.jobInfo, questionId]);
 
@@ -151,18 +212,28 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
                 }}
             >
                 <View style={styles.imageContainer}>
+                    {console.log("🖼️ Rendering images:", imageUri)}
                     {imageUri &&
-                        imageUri.map((image, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                onPress={() => handleImagePress(image)}
-                            >
-                                <Image
-                                    source={{ uri: image.uri }}
-                                    style={styles.image}
-                                />
-                            </TouchableOpacity>
-                        ))}
+                        imageUri.map((image, index) => {
+                            console.log(`🖼️ Rendering image ${index}:`, image.uri);
+                            return (
+                                <TouchableOpacity
+                                    key={index}
+                                    onPress={() => handleImagePress(image)}
+                                >
+                                    <Image
+                                        source={{ uri: image.uri }}
+                                        style={styles.image}
+                                        onError={(error) => {
+                                            console.log(`❌ Image load error for ${image.uri}:`, error);
+                                        }}
+                                        onLoad={() => {
+                                            console.log(`✅ Image loaded successfully: ${image.uri}`);
+                                        }}
+                                    />
+                                </TouchableOpacity>
+                            );
+                        })}
                 </View>
                 <View>
                     <IconButton
@@ -185,6 +256,9 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
                                 <Image
                                     source={{ uri: selectedImage.uri }}
                                     style={styles.previewImage}
+                                    onError={(error) => {
+                                        console.log('Preview image load error:', error);
+                                    }}
                                 />
                                 <View style={styles.buttonContainer}>
                                     <CustomButton
@@ -212,7 +286,7 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
                     </View>
                 </View>
             </Modal>
-            
+
             {/* Option Modal for Camera/Gallery Selection */}
             <Modal
                 visible={optionModalVisible}
@@ -223,21 +297,21 @@ function ImageCapture({ questionId, questionNumber, location, ncSeverity }) {
                 <View style={styles.optionModalBackground}>
                     <View style={styles.optionModalContainer}>
                         <Text style={styles.optionModalTitle}>Select Image Source</Text>
-                        
+
                         <TouchableOpacity
                             style={styles.optionButton}
                             onPress={takeImageHandler}
                         >
                             <Text style={styles.optionButtonText}> Take Photo</Text>
                         </TouchableOpacity>
-                        
+
                         <TouchableOpacity
                             style={styles.optionButton}
                             onPress={pickImageHandler}
                         >
                             <Text style={styles.optionButtonText}> Choose from Gallery</Text>
                         </TouchableOpacity>
-                        
+
                         <TouchableOpacity
                             style={[styles.optionButton, styles.cancelButton]}
                             onPress={() => setOptionModalVisible(false)}

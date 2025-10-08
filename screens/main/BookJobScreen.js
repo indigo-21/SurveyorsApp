@@ -1,22 +1,27 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { format } from 'date-fns';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { format } from "date-fns";
 
 import ScreenWrapper from "../../components/ScreenWrapper";
 import JobList from "../../components/JobList";
 import Colors from "../../constants/Colors";
 import CustomModal from "../../components/CustomModal";
 import ScreenTitle from "../../components/ScreenTitle";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import { fetchDataFromDB, insertOrUpdateData } from "../../util/database";
 import { getPropertyInspectorJobs, updateBookingJob } from "../../util/db/jobs";
 import { bookPIJob } from "../../util/db/bookings";
 import ModalButton from "../../components/CustomModalBtn";
 import { AuthContext } from "../../store/auth-context";
+import CustomButton from "../../components/CustomButton";
 
 function BookJobScreen() {
     const [modalIsVisible, setModalIsVisible] = useState(false);
+    const [activeJob, setActiveJob] = useState({ jobNumber: null, jobID: null });
+    const [comment, setComment] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [isPickerVisible, setPickerVisible] = useState(false);
     const navigation = useNavigation();
     const route = useRoute();
     const [unbookedJobs, setUnbookedJobs] = useState([]);
@@ -31,30 +36,52 @@ function BookJobScreen() {
         });
     }, [navigation]);
 
+    const showPicker = () => {
+        setPickerVisible(true);
+    };
+
+    const hidePicker = () => {
+        setPickerVisible(false);
+    };
+
+    const handleConfirm = (date) => {
+        setSelectedDate(date);
+        hidePicker();
+    };
+
     async function bookJobPressHandler(jobNumber, jobID) {
         setModalIsVisible((prevData) => !prevData);
+        setActiveJob({ jobNumber, jobID });
 
-        const formattedDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+        // const formattedDate = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+    }
+
+    async function submitBookJobHandler() {
+
+        const formattedDate = format(selectedDate, "yyyy-MM-dd HH:mm:ss");
+        const dateToday = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
         const bookJobQuery = bookPIJob();
         const bookParams = [
-            jobNumber,
+            activeJob.jobNumber,
             "Booked",
             userID,
             propertyInspectorID,
             formattedDate,
-            "Booked by Property Inspector",
-            formattedDate,
-            formattedDate,
+            comment || "Booked by Property Inspector",
+            dateToday,
+            dateToday,
         ];
 
         const updateJobQuery = updateBookingJob();
         const updateParams = [
-            1,
+            2,
+            dateToday,
             formattedDate,
-            formattedDate,
-            "%" + jobNumber + "%",
+            "%" + activeJob.jobNumber + "%",
         ];
+
+        // console.log(comment);
 
         try {
             await insertOrUpdateData(bookJobQuery, bookParams);
@@ -72,7 +99,7 @@ function BookJobScreen() {
     }
 
     function jobDetailsNavigateHandler(jobNumber, jobID) {
-        setModalIsVisible((prevData) => !prevData);
+        // setModalIsVisible((prevData) => !prevData);
         navigation.navigate("JobDetails", { jobID, jobNumber });
     }
 
@@ -101,20 +128,67 @@ function BookJobScreen() {
         getPIUnbookedJobs();
     }, []);
 
-    // console.log("Unbooked Jobs:", unbookedJobs);
-
     return (
         <ScreenWrapper>
 
-            {/* <CustomModal
+            <CustomModal
                 setModalVisible={setModalIsVisible}
                 modalVisible={modalIsVisible}
                 title={activeJob.jobNumber}
                 subtitle="Job Number"
             >
-                <ModalButton title="Book" onPress={bookJobPressHandler} />
-                <ModalButton title="Job Details" onPress={jobDetailsNavigateHandler} />
-            </CustomModal> */}
+
+                <View style={styles.content}>
+                    <CustomButton
+                        text="Select Date & Time"
+                        importedStyles={{
+                            backgroundColor: Colors.primary,
+                            color: Colors.white,
+                            marginTop: 16,
+                        }}
+                        onPress={showPicker}
+                    />
+                </View>
+
+                <Text
+                    style={[
+                        {
+                            backgroundColor: Colors.white,
+                            margin: 16,
+                            padding: 8,
+                            borderRadius: 8,
+                            textAlign: "center",
+                            width: "80%",
+                            fontSize: 16,
+                        },
+                    ]}
+                    onPress={showPicker}
+                >
+                    Selected: {format(selectedDate, "yyyy-MM-dd HH:mm:ss")}
+                </Text>
+
+                <DateTimePickerModal
+                    isVisible={isPickerVisible}
+                    mode="datetime"
+                    date={selectedDate}
+                    onConfirm={handleConfirm}
+                    onCancel={hidePicker}
+                    is24Hour={false} // Set to true for 24-hour format
+                    themeVariant="light" // <-- This is critical on iOS
+                    textColor="#000000" // <-- Makes text visible on white background
+                />
+
+                <TextInput
+                    style={styles.textInput}
+                    multiline
+                    autoFocus={false}
+                    placeholder="Add Comment (Optional)"
+                    onChangeText={(value) =>
+                        setComment(value)
+                    }
+                />
+                <ModalButton title="Book" onPress={submitBookJobHandler} />
+            </CustomModal>
 
             <ScreenTitle title="List of Unbooked Jobs" />
             <View style={styles.container}>
@@ -199,6 +273,12 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 16,
     },
+    content: {
+        flexDirection: "row",
+        paddingVertical: 4,
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+    },
     clientRow: {
         fontSize: 16,
         alignContent: "center",
@@ -214,6 +294,18 @@ const styles = StyleSheet.create({
         color: Colors.white,
         textAlign: "center",
         fontSize: 18,
+    },
+    textInput: {
+        height: 60,
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        marginTop: 8,
+        width: "100%",
+        color: Colors.black,
+        padding: 10,
+        marginBottom: 32,
     },
 });
 

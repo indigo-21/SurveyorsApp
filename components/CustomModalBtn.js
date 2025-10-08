@@ -16,7 +16,7 @@ function CustomModalBtn({ title, onPress }) {
             >
                 <Text style={styles.text}>{title}</Text>
                 <AntDesign
-                    name="rightcircle"
+                    name="right-circle"
                     size={24}
                     color={Colors.primary}
                 />

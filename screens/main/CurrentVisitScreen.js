@@ -323,13 +323,13 @@ function CurrentVisitScreen() {
                                         >
                                             {item.job_status_id === 1 ? (
                                                 <AntDesign
-                                                    name="checkcircle"
+                                                    name="check-circle"
                                                     size={24}
                                                     color={Colors.success}
                                                 />
                                             ) : (
                                                 <AntDesign
-                                                    name="exclamationcircle"
+                                                    name="exclamation-circle"
                                                     size={24}
                                                     color={Colors.warning}
                                                 />
@@ -407,7 +407,7 @@ function CurrentVisitScreen() {
                                                     ]}
                                                 >
                                                     <Text style={{ color: Colors.primary, fontWeight: "bold", fontSize: 16 }}>
-                                                        Book
+                                                        Download
                                                     </Text>
                                                 </Pressable>
                                                 <View style={{ width: 1, height: 20, backgroundColor: Colors.ripple, marginHorizontal: 16 }} />
