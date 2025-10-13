@@ -26,7 +26,7 @@ function ProfileScreen() {
     // Generate dynamic profile image URL or use a default
     const getProfileImageUrl = () => {
         if (user.photo) {
-            return `${url}/storage/profile_images/${user.photo}`;
+            return `${url}storage/profile_images/${user.photo}`;
         }
         // Fallback to a default avatar or placeholder
         return null;

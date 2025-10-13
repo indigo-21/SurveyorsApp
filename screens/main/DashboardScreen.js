@@ -38,6 +38,7 @@ import { setSyncReady } from "./services/SyncStatusService";
 import { getLogs } from "../../util/db/tempSyncLogs";
 import eventbus from "../../events/eventbus";
 import { getPropertyInspector } from "../../util/db/propertyInspectors";
+import Constants from 'expo-constants';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -155,32 +156,32 @@ function DashboardScreen() {
         const getSurveyQuestionSetsQuery = getSurveyQuestionSets();
         const getPIUnbookedJobsQuery = getPropertyInspectorUnbookedJobs();
         const getCompletedJobsQuery = getPropertyInspectorJobs();
+        try {
+            const data = await Promise.all([
+                fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 1, 2]),
+                fetchDataFromDB(getSurveyQuestionSetsQuery),
+                fetchDataFromDB(getPIUnbookedJobsQuery, [propertyInspectorID, 25]),
+                fetchDataFromDB(getCompletedJobsQuery, [
+                    propertyInspectorID,
+                    16,
+                    3,
+                ]),
+            ]);
 
-        Promise.all([
-            fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 1, 2]),
-            fetchDataFromDB(getSurveyQuestionSetsQuery),
-            fetchDataFromDB(getPIUnbookedJobsQuery, [propertyInspectorID, 25]),
-            fetchDataFromDB(getCompletedJobsQuery, [
-                propertyInspectorID,
-                16,
-                3,
-            ]),
-        ])
-            .then((data) => {
-                dataContext.storeDashboardValues(data);
-            })
-            .catch((error) => {
-                console.log(error);
-                Alert.alert(
-                    "Fetching Failed",
-                    error.response?.data.message ||
-                    error.message ||
-                    "Please try again later.",
-                );
-            })
-            .finally(() => {
-                setSyncReady(true);
-            });
+            dataContext.storeDashboardValues(data);
+            return data;
+        } catch (error) {
+            console.log(error);
+            Alert.alert(
+                "Fetching Failed",
+                error.response?.data.message ||
+                error.message ||
+                "Please try again later.",
+            );
+            throw error;
+        } finally {
+            setSyncReady(true);
+        }
     };
 
     useEffect(() => {
@@ -489,6 +490,13 @@ function DashboardScreen() {
                 )}
             </View>
             {/* </SafeAreaView> */}
+
+
+            {/* App version at the bottom */}
+            <View style={styles.versionContainer}>
+                <Text style={styles.versionText}>App version: {Constants.manifest?.version || Constants.expoConfig?.version || '1.0.0'}</Text>
+            </View>
+
         </ScreenWrapper>
     );
 }
@@ -523,6 +531,15 @@ const styles = StyleSheet.create({
         paddingBottom: 4,
         fontWeight: "600",
         textAlign: "left",
+    },
+    versionContainer: {
+        marginTop: 12,
+        marginBottom: 12,
+    },
+    versionText: {
+        fontSize: 12,
+        color: Colors.black,
+        opacity: 0.6,
     },
     userContainer: {
         flexDirection: "row",

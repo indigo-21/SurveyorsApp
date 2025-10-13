@@ -57,11 +57,15 @@ function OTPVerificationScreen() {
     };
 
     useEffect(() => {
+        if (isNavigating) {
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         if (
             parsePropertyInspector.user?.otp != null &&
-            parsePropertyInspector.user?.otp_verified_at != null &&
-            !isNavigating
+            parsePropertyInspector.user?.otp_verified_at != null
         ) {
             setIsNavigating(true);
             // Use setTimeout to ensure navigation happens after current render cycle
@@ -78,7 +82,6 @@ function OTPVerificationScreen() {
     }, [
         parsePropertyInspector.user?.otp,
         parsePropertyInspector.user?.otp_verified_at,
-        isNavigating
     ]);
 
     useEffect(() => {

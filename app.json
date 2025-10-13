@@ -1,8 +1,8 @@
 {
     "expo": {
-        "name": "AMI SurveyorsApp",
+        "name": "AMI Surveyors App",
         "slug": "surveyors-app",
-        "version": "2.0.0",
+        "version": "2.3.1",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "newArchEnabled": true,
@@ -12,7 +12,7 @@
             "backgroundColor": "#ffffff"
         },
         "ios": {
-            "buildNumber": "2.0.0",
+            "buildNumber": "2.3.1",
             "supportsTablet": true,
             "bundleIdentifier": "com.anonymous.AMISurveyorsApp"
         },
