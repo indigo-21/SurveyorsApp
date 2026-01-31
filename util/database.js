@@ -259,22 +259,33 @@ const storeDataToDB = async (db, table, data) => {
         await runExclusive(async () => {
             await retryAsync(async () => {
                 await db.withTransactionAsync(async () => {
-                    for (const item of data) {
-                // if (!item || typeof item !== 'object') {
-                //     console.warn(`Invalid item for table ${table}:`, item);
-                //     continue; // Skip invalid entries
-                // }
+                    // Use multi-row INSERTs in batches to reduce number of DB calls
+                    const batchSize = 200; // adjust as needed
 
-                const columns = Object.keys(item).join(', ');
-                const placeholders = Object.keys(item).map(() => '?').join(', ');
-                const values = Object.values(item);
+                    // Determine column order from the first item (assumes API returns consistent shape)
+                    const firstItem = data[0];
+                    const columns = Object.keys(firstItem);
+                    const columnList = columns.join(', ');
 
-                const sql = `INSERT OR REPLACE INTO ${table} (${columns}) VALUES (${placeholders})`;
+                    for (let i = 0; i < data.length; i += batchSize) {
+                        const batch = data.slice(i, i + batchSize);
 
-                // console.log(`Executing SQL for table ${table}:`, sql, values);
-                    await db.runAsync(sql, values);
-                }
-            });
+                        // Build placeholders and flattened values
+                        const placeholders = batch
+                            .map(() => `(${columns.map(() => '?').join(',')})`)
+                            .join(',');
+
+                        const values = [];
+                        for (const item of batch) {
+                            for (const col of columns) {
+                                values.push(item[col] === undefined ? null : item[col]);
+                            }
+                        }
+
+                        const sql = `INSERT OR REPLACE INTO ${table} (${columnList}) VALUES ${placeholders}`;
+                        await db.runAsync(sql, values);
+                    }
+                });
         }, { retries: 6, delay: 300 });
         });
 

@@ -15,3 +15,7 @@ export const surveyQuestionSetsTable = createTableSQL('survey_question_sets', su
 export const getSurveyQuestionSets = () => {
     return `SELECT * FROM survey_question_sets`;
 }
+
+export const getSurveyQuestionSetsCount = () => {
+    return `SELECT COUNT(*) as count FROM survey_question_sets`;
+}

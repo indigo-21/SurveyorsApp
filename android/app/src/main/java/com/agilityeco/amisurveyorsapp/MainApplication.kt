@@ -1,4 +1,4 @@
-package com.anonymous.AMISurveyorsApp
+package com.agilityeco.amisurveyorsapp
 
 import android.app.Application
 import android.content.res.Configuration

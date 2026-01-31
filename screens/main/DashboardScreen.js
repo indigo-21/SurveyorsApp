@@ -29,10 +29,12 @@ import {
     fetchFirstDataFromDB,
     initializeDB,
 } from "../../util/database";
-import { getSurveyQuestionSets } from "../../util/db/surveyQuestionSets";
+import { getSurveyQuestionSets, getSurveyQuestionSetsCount } from "../../util/db/surveyQuestionSets";
 import {
     getPropertyInspectorJobs,
+    getPropertyInspectorJobsCount,
     getPropertyInspectorUnbookedJobs,
+    getPropertyInspectorUnbookedJobsCount,
 } from "../../util/db/jobs";
 import { setSyncReady } from "./services/SyncStatusService";
 import { getLogs } from "../../util/db/tempSyncLogs";
@@ -152,24 +154,24 @@ function DashboardScreen() {
     };
 
     const fetchAllData = async () => {
-        const getPiJobsQuery = getPropertyInspectorJobs();
-        const getSurveyQuestionSetsQuery = getSurveyQuestionSets();
-        const getPIUnbookedJobsQuery = getPropertyInspectorUnbookedJobs();
-        const getCompletedJobsQuery = getPropertyInspectorJobs();
+        // Use COUNT queries to avoid fetching large datasets just to get counts
         try {
             const data = await Promise.all([
-                fetchDataFromDB(getPiJobsQuery, [propertyInspectorID, 1, 2]),
-                fetchDataFromDB(getSurveyQuestionSetsQuery),
-                fetchDataFromDB(getPIUnbookedJobsQuery, [propertyInspectorID, 25]),
-                fetchDataFromDB(getCompletedJobsQuery, [
-                    propertyInspectorID,
-                    16,
-                    3,
-                ]),
+                fetchFirstDataFromDB(getPropertyInspectorJobsCount(), [propertyInspectorID, 1, 2]),
+                fetchFirstDataFromDB(getSurveyQuestionSetsCount(), []),
+                fetchFirstDataFromDB(getPropertyInspectorUnbookedJobsCount(), [propertyInspectorID, 25]),
+                fetchFirstDataFromDB(getPropertyInspectorJobsCount(), [propertyInspectorID, 16, 3]),
             ]);
 
-            dataContext.storeDashboardValues(data);
-            return data;
+            const counts = {
+                currentVisits: parseInt(data[0]?.count || 0, 10),
+                questionSets: parseInt(data[1]?.count || data[1]?.length || 0, 10),
+                bookJobs: parseInt(data[2]?.count || 0, 10),
+                completedVisits: parseInt(data[3]?.count || 0, 10),
+            };
+
+            dataContext.storeDashboardValues(counts);
+            return counts;
         } catch (error) {
             console.log(error);
             Alert.alert(
@@ -243,7 +245,7 @@ function DashboardScreen() {
         return () => {
             eventbus.off("logsChanged", logsChangedHandler);
         };
-    }, [isFocused, isInitialized, isInitializing]);
+    }, [isFocused, isInitialized, isInitializing, propertyInspectorID]);
 
     const syncDataHandler = async () => {
         if (isInitializing) {

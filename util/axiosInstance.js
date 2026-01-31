@@ -1,10 +1,13 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Create an Axios instance
+// Create an Axios instance with larger timeouts and unlimited body size for uploads
 const axiosInstance = axios.create({
     withCredentials: true,
     withXSRFToken: true,
+    timeout: 120000,
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
 });
 
 // Add a request interceptor to dynamically set baseURL

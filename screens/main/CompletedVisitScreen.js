@@ -1,5 +1,6 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
@@ -15,6 +16,7 @@ import { fetchDataFromDB } from "../../util/database";
 function CompletedVisitScreen() {
     const navigation = useNavigation();
     const [jobList, setJobList] = useState([]);
+    const [searchText, setSearchText] = useState("");
     const isFocused = useIsFocused();
     const authContext = useContext(AuthContext);
 
@@ -65,13 +67,61 @@ function CompletedVisitScreen() {
         });
     }
 
+    const filteredJobList = useMemo(() => {
+        const q = searchText.trim().toLowerCase();
+        if (!q) return jobList;
+
+        const includes = (value) => value != null && String(value).toLowerCase().includes(q);
+
+        return jobList.filter((item) => {
+            return (
+                includes(item.group_id) ||
+                includes(item.address1) ||
+                includes(item.address2) ||
+                includes(item.address3) ||
+                includes(item.city) ||
+                includes(item.county) ||
+                includes(item.postcode) ||
+                includes(item.cert_no) ||
+                includes(item.client_abbrevation)
+            );
+        });
+    }, [jobList, searchText]);
+
     return (
         <ScreenWrapper>
             <ScreenTitle title="List of Completed Visits" />
+
+            <View style={styles.searchContainer}>
+                <FontAwesome5 name="search" size={18} color={Colors.primary} />
+                <TextInput
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    placeholder="Search job #, address, postcode, cert no..."
+                    placeholderTextColor={Colors.ripple}
+                    style={styles.searchInput}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    clearButtonMode="never"
+                />
+                {!!searchText && (
+                    <Pressable
+                        onPress={() => setSearchText("")}
+                        style={({ pressed }) => [
+                            styles.searchClearBtn,
+                            pressed && { opacity: 0.6 },
+                        ]}
+                        hitSlop={10}
+                    >
+                        <FontAwesome5 name="times-circle" size={18} color={Colors.ripple} />
+                    </Pressable>
+                )}
+            </View>
+
             <View style={styles.container}>
                 <FlatList
                     showsVerticalScrollIndicator={false}
-                    data={[...jobList].reverse()}
+                    data={[...filteredJobList].reverse()}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <JobList>
@@ -199,6 +249,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginTop: 16,
+    },
+    searchContainer: {
+        marginTop: 12,
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: Colors.ripple,
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        backgroundColor: Colors.white,
+    },
+    searchInput: {
+        flex: 1,
+        marginLeft: 10,
+        fontSize: 16,
+        color: Colors.black,
+    },
+    searchClearBtn: {
+        paddingLeft: 8,
     },
     clientRow: {
         fontSize: 16,

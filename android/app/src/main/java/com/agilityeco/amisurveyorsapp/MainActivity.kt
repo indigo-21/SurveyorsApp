@@ -1,4 +1,4 @@
-package com.anonymous.AMISurveyorsApp
+package com.agilityeco.amisurveyorsapp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -73,6 +73,17 @@ export const getPropertyInspectorJobs = () => {
 
 };
 
+export const getPropertyInspectorJobsCount = () => {
+    return `SELECT COUNT(*) as count FROM (
+                SELECT SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id
+                FROM jobs
+                WHERE property_inspector_id = ?
+                AND job_status_id IN (?, ?)
+                GROUP BY group_id
+            )`;
+
+};
+
 export const getFilteredPropertyInspectorJobs = (value = {}) => {
     let baseQuery = `
                 SELECT j.id, 
@@ -129,6 +140,16 @@ export const getPropertyInspectorUnbookedJobs = () => {
             AND job_status_id = ?
             GROUP BY group_id`;
 }
+
+export const getPropertyInspectorUnbookedJobsCount = () => {
+    return `SELECT COUNT(*) as count FROM (
+                SELECT SUBSTR(job_number, 1, INSTR(job_number, '-') - 1) AS group_id
+                FROM jobs
+                WHERE property_inspector_id = ?
+                AND job_status_id = ?
+                GROUP BY group_id
+            )`;
+};
 
 export const getJobDetails = () => {
     return `SELECT * FROM jobs j

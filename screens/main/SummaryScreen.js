@@ -156,7 +156,7 @@ function SummaryScreen() {
 
             let jobRemediationType = "";
             let jobStatus = 3;
-            let invoiceStatus = 1;
+            let invoiceStatus = 2;
             let reinspectRemediation = dateToday;
 
             if (getSurveyResult.length !== 0) {
@@ -171,7 +171,7 @@ function SummaryScreen() {
 
                 jobRemediationType = "NC";
                 jobStatus = 16;
-                invoiceStatus = null;
+                // invoiceStatus = null;
 
                 let remediationTime, durationUnit;
 

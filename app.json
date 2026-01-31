@@ -2,7 +2,7 @@
     "expo": {
         "name": "AMI Surveyors App",
         "slug": "surveyors-app",
-        "version": "2.3.1",
+        "version": "2.4.0",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "newArchEnabled": true,
@@ -12,9 +12,9 @@
             "backgroundColor": "#ffffff"
         },
         "ios": {
-            "buildNumber": "2.3.1",
+            "buildNumber": "2.4.0",
             "supportsTablet": true,
-            "bundleIdentifier": "com.anonymous.AMISurveyorsApp"
+            "bundleIdentifier": "com.agilityeco.AMISurveyorsApp"
         },
         "android": {
             "versionCode": 2,
@@ -24,7 +24,7 @@
                 "backgroundColor": "#ffffff"
             },
             "edgeToEdgeEnabled": true,
-            "package": "com.anonymous.AMISurveyorsApp",
+            "package": "com.agilityeco.amisurveyorsapp",
             "permissions": [
                 "android.permission.CAMERA",
                 "android.permission.RECORD_AUDIO"
